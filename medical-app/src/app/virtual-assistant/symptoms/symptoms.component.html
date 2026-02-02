@@ -1,0 +1,87 @@
+<div class="container mx-auto py-16 px-6 bg-light-blue-50">
+  <!-- Chat Section -->
+  <div class="chat-box border-2 border-gray-300 rounded-md p-4 mb-6 bg-white">
+    <div *ngFor="let msg of chatMessages" class="mb-4">
+      <p [class.text-right]="msg.sender === 'You'" class="text-blue-600">
+        <strong>{{ msg.sender }}:</strong> {{ msg.message }}
+      </p>
+    </div>
+    <div *ngIf="!chatCompleted" class="flex gap-4">
+      <input
+        type="text"
+        [(ngModel)]="userMessage"
+        class="flex-1 p-3 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-gray-800"
+        placeholder="Type your message..."
+      />
+      <button
+        class="bg-red-500 text-white font-bold py-2 px-6 rounded-md hover:bg-red-600 transition"
+        (click)="sendMessage()"
+      >
+        Send
+      </button>
+    </div>
+  </div>
+
+  <!-- Symptom Selection Section -->
+  <div *ngIf="chatCompleted">
+    <h1 class="text-4xl font-bold text-blue-700 mb-4">Add Your Symptoms</h1>
+    <p class="text-blue-600 mb-6">
+      Add as many symptoms as possible for more accurate results.
+    </p>
+
+    <!-- Symptom Search and Selection -->
+    <div class="mb-6 relative">
+      <input
+        type="text"
+        [(ngModel)]="searchTerm"
+        (focus)="openDropdown()"
+        (input)="filterSymptoms()"
+        placeholder="Search for a symptom..."
+        class="w-full p-3 border-2 border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+      />
+      <ul
+        *ngIf="dropdownOpen && filteredSymptoms.length > 0"
+        class="absolute z-10 bg-white border border-gray-300 rounded-md shadow-md w-full mt-1"
+      >
+        <li
+          *ngFor="let symptom of filteredSymptoms"
+          (click)="selectSymptomFromSearch(symptom)"
+          class="p-2 cursor-pointer hover:bg-blue-100 text-gray-800"
+        >
+          {{ symptom }}
+        </li>
+      </ul>
+    </div>
+
+
+    <!-- Selected Symptoms -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <span
+        *ngFor="let symptom of selectedSymptoms; let i = index"
+        class="flex items-center bg-red-100 text-red-500 border border-red-500 rounded-full px-4 py-2"
+      >
+        {{ symptom }}
+        <button class="ml-2 text-red-500 hover:text-red-700" (click)="removeSymptom(i)">
+          &times;
+        </button>
+      </span>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between mt-8">
+      <button
+        class="text-blue-700 font-semibold hover:underline"
+        (click)="goBackToAge()"
+      >
+        Back
+      </button>
+      <button
+        class="bg-red-500 text-white font-bold py-2 px-6 rounded-md hover:bg-red-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+        [disabled]="selectedSymptoms.length === 0"
+        (click)="proceedToResults()"
+      >
+        Continue
+      </button>
+    </div>
+  </div>
+</div>

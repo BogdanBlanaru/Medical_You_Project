@@ -1,0 +1,38 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .chart-content-section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+  }
+  
+  .chart {
+    flex: 1;
+    min-width: 300px; /* Ensure charts display properly on smaller screens */
+    margin-right: 20px;
+  }
+  
+  .content {
+    flex: 1;
+    min-width: 300px;
+  }
+  
+  h2 {
+    font-family: 'Arial', sans-serif;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.6;
+  }
+  

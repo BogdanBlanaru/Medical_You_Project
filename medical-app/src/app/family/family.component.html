@@ -1,0 +1,516 @@
+<!-- Alert -->
+<div *ngIf="showAlert"
+     class="fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg transition-all duration-300"
+     [ngClass]="{
+       'bg-green-500/20 border border-green-500/50 text-green-400': alertColor === 'green',
+       'bg-red-500/20 border border-red-500/50 text-red-400': alertColor === 'red',
+       'bg-blue-500/20 border border-blue-500/50 text-blue-400': alertColor === 'blue'
+     }">
+  {{ alertMsg }}
+</div>
+
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-white mb-2">Family Management</h1>
+      <p class="text-gray-400">Manage health records for your family members</p>
+    </div>
+
+    <!-- Active Profile Indicator -->
+    <div *ngIf="activeProfile && !activeProfile.isOwnProfile"
+         class="mb-6 bg-blue-500/20 border border-blue-500/50 rounded-xl p-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-blue-500/30 flex items-center justify-center">
+          <span class="text-blue-400 font-semibold">{{ getMemberInitials(activeProfile.name) }}</span>
+        </div>
+        <div>
+          <p class="text-blue-400 font-medium">Currently viewing: {{ activeProfile.name }}</p>
+          <p class="text-blue-400/70 text-sm">{{ getRelationshipDisplay(activeProfile.relationshipType) }}</p>
+        </div>
+      </div>
+      <button (click)="switchToOwnProfile()"
+              class="px-4 py-2 bg-blue-500/30 hover:bg-blue-500/50 text-blue-400 rounded-lg transition-colors">
+        Switch to My Profile
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+    </div>
+
+    <!-- No Family Yet -->
+    <div *ngIf="!isLoading && !hasFamily" class="text-center py-20">
+      <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-gray-800 flex items-center justify-center">
+        <svg class="w-12 h-12 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-semibold text-white mb-3">Create Your Family Group</h2>
+      <p class="text-gray-400 mb-6 max-w-md mx-auto">
+        Add family members to manage their health records, book appointments for them, and track their medical history.
+      </p>
+      <button (click)="createFamily()"
+              [disabled]="isSaving"
+              class="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all disabled:opacity-50">
+        <span *ngIf="!isSaving">Create Family Group</span>
+        <span *ngIf="isSaving" class="flex items-center gap-2">
+          <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          Creating...
+        </span>
+      </button>
+    </div>
+
+    <!-- Family Content -->
+    <div *ngIf="!isLoading && hasFamily">
+
+      <!-- Tab Navigation (when viewing profile) -->
+      <div *ngIf="activeTab === 'profile'" class="mb-6">
+        <button (click)="backToMembers()"
+                class="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Back to Family Members
+        </button>
+      </div>
+
+      <!-- Members View -->
+      <div *ngIf="activeTab === 'members'">
+
+        <!-- Members Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <!-- Add Member Card -->
+          <button (click)="openAddMemberModal()"
+                  class="bg-gray-800/50 border-2 border-dashed border-gray-700 hover:border-cyan-500/50 rounded-2xl p-6 flex flex-col items-center justify-center min-h-[200px] transition-all hover:bg-gray-800/70 group">
+            <div class="w-16 h-16 rounded-full bg-gray-700/50 group-hover:bg-cyan-500/20 flex items-center justify-center mb-4 transition-colors">
+              <svg class="w-8 h-8 text-gray-500 group-hover:text-cyan-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+            </div>
+            <span class="text-gray-400 group-hover:text-white font-medium transition-colors">Add Family Member</span>
+          </button>
+
+          <!-- Member Cards -->
+          <div *ngFor="let member of members"
+               class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6 hover:border-gray-600 transition-all">
+
+            <!-- Header -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-4">
+                <!-- Avatar -->
+                <div class="relative">
+                  <div *ngIf="member.avatarUrl"
+                       class="w-14 h-14 rounded-full bg-cover bg-center border-2 border-gray-700"
+                       [style.backgroundImage]="'url(' + member.avatarUrl + ')'">
+                  </div>
+                  <div *ngIf="!member.avatarUrl"
+                       class="w-14 h-14 rounded-full flex items-center justify-center text-lg font-semibold"
+                       [ngClass]="{
+                         'bg-cyan-500/20 text-cyan-400': member.relationshipType === 'SELF',
+                         'bg-pink-500/20 text-pink-400': member.relationshipType === 'SPOUSE',
+                         'bg-green-500/20 text-green-400': member.relationshipType === 'CHILD',
+                         'bg-purple-500/20 text-purple-400': member.relationshipType === 'PARENT',
+                         'bg-yellow-500/20 text-yellow-400': member.relationshipType === 'SIBLING',
+                         'bg-gray-500/20 text-gray-400': member.relationshipType === 'OTHER'
+                       }">
+                    {{ getMemberInitials(member.name) }}
+                  </div>
+                  <!-- Self badge -->
+                  <div *ngIf="isSelfMember(member)"
+                       class="absolute -bottom-1 -right-1 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center">
+                    <svg class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                    </svg>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 class="text-white font-semibold text-lg">{{ member.name }}</h3>
+                  <p class="text-gray-400 text-sm">{{ getRelationshipDisplay(member.relationshipType) }}</p>
+                </div>
+              </div>
+
+              <!-- Actions (not for SELF) -->
+              <div *ngIf="!isSelfMember(member)" class="flex gap-2">
+                <button (click)="openEditMemberModal(member)"
+                        class="p-2 text-gray-400 hover:text-white hover:bg-gray-700/50 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                </button>
+                <button (click)="confirmDeleteMember(member)"
+                        class="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Info -->
+            <div class="space-y-2 mb-4">
+              <div *ngIf="member.age" class="flex items-center gap-2 text-gray-400 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                <span>{{ member.age }} years old</span>
+              </div>
+              <div *ngIf="member.medicalId" class="flex items-center gap-2 text-gray-400 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"/>
+                </svg>
+                <span class="font-mono text-xs">{{ member.medicalId }}</span>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2">
+              <button (click)="viewMemberProfile(member)"
+                      class="flex-1 py-2 px-4 bg-gray-700/50 hover:bg-gray-700 text-white rounded-lg transition-colors text-sm font-medium">
+                View Profile
+              </button>
+              <button *ngIf="!isSelfMember(member)"
+                      (click)="switchToProfile(member)"
+                      class="py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg transition-colors text-sm font-medium">
+                Switch
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profile View -->
+      <div *ngIf="activeTab === 'profile' && selectedMember && memberProfile">
+
+        <!-- Profile Header -->
+        <div class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6 mb-6">
+          <div class="flex items-center gap-6">
+            <div class="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold"
+                 [ngClass]="{
+                   'bg-cyan-500/20 text-cyan-400': selectedMember.relationshipType === 'SELF',
+                   'bg-pink-500/20 text-pink-400': selectedMember.relationshipType === 'SPOUSE',
+                   'bg-green-500/20 text-green-400': selectedMember.relationshipType === 'CHILD',
+                   'bg-purple-500/20 text-purple-400': selectedMember.relationshipType === 'PARENT',
+                   'bg-yellow-500/20 text-yellow-400': selectedMember.relationshipType === 'SIBLING',
+                   'bg-gray-500/20 text-gray-400': selectedMember.relationshipType === 'OTHER'
+                 }">
+              {{ getMemberInitials(memberProfile.name) }}
+            </div>
+            <div>
+              <h2 class="text-2xl font-bold text-white">{{ memberProfile.name }}</h2>
+              <p class="text-gray-400">{{ getRelationshipDisplay(memberProfile.relationshipType) }}</p>
+              <p *ngIf="memberProfile.medicalId" class="text-cyan-400 font-mono text-sm mt-1">{{ memberProfile.medicalId }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile cannot be edited for SELF -->
+        <div *ngIf="isSelfMember(selectedMember)"
+             class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 mb-6">
+          <p class="text-yellow-400 text-sm">
+            This is your own profile. To edit your details, please go to
+            <a routerLink="/my-profile" class="underline hover:text-yellow-300">My Profile</a>.
+          </p>
+        </div>
+
+        <!-- Profile Form (only for non-SELF) -->
+        <form *ngIf="!isSelfMember(selectedMember)" [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="space-y-6">
+
+          <!-- Personal Information -->
+          <div class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Personal Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Phone Number</label>
+                <input type="text" formControlName="phoneNumber"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Gender</label>
+                <select formControlName="gender"
+                        class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+                  <option value="">Select Gender</option>
+                  <option value="MALE">Male</option>
+                  <option value="FEMALE">Female</option>
+                </select>
+              </div>
+              <div class="md:col-span-2">
+                <label class="block text-gray-400 text-sm mb-2">Address</label>
+                <input type="text" formControlName="address"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">City</label>
+                <input type="text" formControlName="city"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Country</label>
+                <input type="text" formControlName="country"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Medical Information -->
+          <div class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Medical Information</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Blood Type</label>
+                <select formControlName="bloodType"
+                        class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+                  <option value="">Select Blood Type</option>
+                  <option *ngFor="let bt of bloodTypes" [value]="bt.value">{{ bt.label }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Height (cm)</label>
+                <input type="number" formControlName="heightCm"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Weight (kg)</label>
+                <input type="number" formControlName="weightKg"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Allergies -->
+          <div class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Allergies</h3>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span *ngFor="let allergy of allergies; let i = index"
+                    class="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm flex items-center gap-2">
+                {{ allergy }}
+                <button type="button" (click)="removeAllergy(i)" class="hover:text-red-300">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </span>
+              <span *ngIf="allergies.length === 0" class="text-gray-500 text-sm">No allergies recorded</span>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="newAllergy" [ngModelOptions]="{standalone: true}"
+                     placeholder="Add allergy..."
+                     class="flex-1 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500">
+              <button type="button" (click)="addAllergy()"
+                      class="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors">
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Chronic Conditions -->
+          <div class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Chronic Conditions</h3>
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span *ngFor="let condition of chronicConditions; let i = index"
+                    class="px-3 py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-sm flex items-center gap-2">
+                {{ condition }}
+                <button type="button" (click)="removeCondition(i)" class="hover:text-yellow-300">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </span>
+              <span *ngIf="chronicConditions.length === 0" class="text-gray-500 text-sm">No conditions recorded</span>
+            </div>
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="newCondition" [ngModelOptions]="{standalone: true}"
+                     placeholder="Add condition..."
+                     class="flex-1 bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-cyan-500">
+              <button type="button" (click)="addCondition()"
+                      class="px-4 py-2 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg transition-colors">
+                Add
+              </button>
+            </div>
+          </div>
+
+          <!-- Emergency Contact -->
+          <div class="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Emergency Contact</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Name</label>
+                <input type="text" formControlName="emergencyContactName"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Phone</label>
+                <input type="text" formControlName="emergencyContactPhone"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+              <div>
+                <label class="block text-gray-400 text-sm mb-2">Relationship</label>
+                <input type="text" formControlName="emergencyContactRelationship"
+                       class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="flex justify-end">
+            <button type="submit"
+                    [disabled]="isSaving"
+                    class="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all disabled:opacity-50">
+              <span *ngIf="!isSaving">Save Profile</span>
+              <span *ngIf="isSaving" class="flex items-center gap-2">
+                <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                Saving...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Member Modal -->
+<div *ngIf="showAddMemberModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-semibold text-white">Add Family Member</h3>
+      <button (click)="closeAddMemberModal()" class="text-gray-400 hover:text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="addMemberForm" (ngSubmit)="submitAddMember()">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">Name *</label>
+          <input type="text" formControlName="name"
+                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500"
+                 placeholder="Enter name">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">Relationship *</label>
+          <select formControlName="relationshipType"
+                  class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+            <option *ngFor="let rt of relationshipTypes" [value]="rt.value">{{ rt.label }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">Date of Birth</label>
+          <input type="date" formControlName="dateOfBirth"
+                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button type="button" (click)="closeAddMemberModal()"
+                class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                [disabled]="addMemberForm.invalid || isSaving"
+                class="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all disabled:opacity-50">
+          <span *ngIf="!isSaving">Add Member</span>
+          <span *ngIf="isSaving">Adding...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div *ngIf="showEditMemberModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-xl font-semibold text-white">Edit Family Member</h3>
+      <button (click)="closeEditMemberModal()" class="text-gray-400 hover:text-white">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="editMemberForm" (ngSubmit)="submitEditMember()">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">Name *</label>
+          <input type="text" formControlName="name"
+                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">Relationship *</label>
+          <select formControlName="relationshipType"
+                  class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+            <option *ngFor="let rt of relationshipTypes" [value]="rt.value">{{ rt.label }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-2">Date of Birth</label>
+          <input type="date" formControlName="dateOfBirth"
+                 class="w-full bg-gray-700/50 border border-gray-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-cyan-500">
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button type="button" (click)="closeEditMemberModal()"
+                class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button type="submit"
+                [disabled]="editMemberForm.invalid || isSaving"
+                class="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all disabled:opacity-50">
+          <span *ngIf="!isSaving">Save Changes</span>
+          <span *ngIf="isSaving">Saving...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div *ngIf="showDeleteConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl p-6 w-full max-w-md mx-4">
+    <div class="text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-white mb-2">Remove Family Member?</h3>
+      <p class="text-gray-400 mb-6">
+        Are you sure you want to remove <span class="text-white font-medium">{{ memberToDelete?.name }}</span> from your family?
+        This action can be undone by contacting support.
+      </p>
+
+      <div class="flex gap-3">
+        <button (click)="closeDeleteConfirmModal()"
+                class="flex-1 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button (click)="deleteMember()"
+                [disabled]="isSaving"
+                class="flex-1 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg font-semibold transition-colors">
+          <span *ngIf="!isSaving">Remove</span>
+          <span *ngIf="isSaving">Removing...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

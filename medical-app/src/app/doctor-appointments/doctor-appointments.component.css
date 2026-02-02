@@ -1,0 +1,45 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+ /* Style the dropdown */
+select {
+    color: black; /* Text color */
+    background-color: white; /* Background color */
+    border: 1px solid #ccc; /* Border styling */
+    border-radius: 5px; /* Rounded corners */
+    padding: 5px;
+    font-size: 16px; /* Font size for better visibility */
+  }
+  
+  /* Style the dropdown options */
+  select option {
+    color: black; /* Ensure the text color is black */
+    background-color: white; /* Background color */
+  }
+  
+  
+  .grid {
+    display: grid;
+    gap: 20px;
+  }
+  
+  .card {
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  button {
+    cursor: pointer;
+  }
+  

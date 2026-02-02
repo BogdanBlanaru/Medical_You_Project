@@ -1,0 +1,103 @@
+/* Style the table */
+.content-wrapper {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }  
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 25px 0;
+    font-size: 18px;
+    text-align: left;
+    color: #333;
+  }
+  
+  .styled-table th {
+    background-color: #007acc;
+    color: #ffffff;
+    padding: 12px 15px;
+    text-align: left;
+  }
+  
+  .styled-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dddddd;
+  }
+  
+  .styled-table tr:nth-of-type(even) {
+    background-color: #f3f3f3;
+  }
+  
+  .styled-table tr:last-of-type {
+    border-bottom: 2px solid #007acc;
+  }
+  
+
+  .chart-container {
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  ngx-charts-bar-vertical {
+    display: block;
+    margin: 0 20px;
+  }
+  
+  ngx-charts-legend {
+    font-size: 16px;
+    color: #333;
+  }
+  
+  .chart-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    color: #007acc;
+    margin-bottom: 10px;
+  }
+
+  /* Badge styles */
+  .badge-ai {
+    background-color: #8b5cf6;
+    color: white;
+  }
+
+  .badge-appointment {
+    background-color: #3b82f6;
+    color: white;
+  }
+
+  .badge-scheduled {
+    background-color: #fbbf24;
+    color: #78350f;
+  }
+
+  .badge-confirmed {
+    background-color: #3b82f6;
+    color: white;
+  }
+
+  .badge-completed {
+    background-color: #10b981;
+    color: white;
+  }
+
+  .badge-cancelled {
+    background-color: #ef4444;
+    color: white;
+  }
+
+  .badge-default {
+    background-color: #6b7280;
+    color: white;
+  }
+  

@@ -1,0 +1,26 @@
+aside {
+    background-color: #f1f5f9; /* Light blue background for the sidebar */
+    padding: 1rem;
+    border-radius: 0.5rem;
+  }
+  
+  nav a {
+    display: block;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    color: #1e3a8a; /* Dark blue text */
+    text-decoration: none;
+  }
+  
+  nav a.active {
+    background-color: #1e3a8a; /* Dark blue background for active links */
+    color: #ffffff; /* White text for active links */
+  }
+  
+  main {
+    padding: 1rem;
+    background-color: #ffffff; /* White background for main content */
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  

@@ -1,0 +1,230 @@
+<app-nav></app-nav>
+<div class="content-wrapper">
+    <!-- Table Section -->
+    <div>
+      <h1 class="text-2xl font-bold text-light-blue-700 mb-4">Patient History</h1>
+
+      <!-- Loading State -->
+      <div *ngIf="isLoading" class="text-center py-8">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-light-blue-700"></div>
+        <p class="mt-4 text-gray-600">Loading patient history...</p>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="errorMessage && !isLoading" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+        {{ errorMessage }}
+      </div>
+
+      <!-- Search and Filters -->
+      <div *ngIf="!isLoading && patientHistory.length > 0" class="bg-white rounded-lg shadow-md p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Search Input -->
+          <div class="lg:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <div class="relative">
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                (ngModelChange)="onSearchChange()"
+                placeholder="Search doctor, symptoms, results..."
+                class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue-500 focus:border-transparent"
+              />
+              <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Type Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <select
+              [(ngModel)]="filterType"
+              (ngModelChange)="onFilterTypeChange($event)"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue-500"
+            >
+              <option value="All">All Types</option>
+              <option value="AI">AI Consultation</option>
+              <option value="Appointment">Appointment</option>
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select
+              [(ngModel)]="filterStatus"
+              (ngModelChange)="onFilterStatusChange($event)"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue-500"
+            >
+              <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+            </select>
+          </div>
+
+          <!-- Date Range -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+            <input
+              type="date"
+              [(ngModel)]="startDate"
+              (ngModelChange)="onDateRangeChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+            <input
+              type="date"
+              [(ngModel)]="endDate"
+              (ngModelChange)="onDateRangeChange()"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-light-blue-500"
+            />
+          </div>
+
+          <!-- Clear Filters -->
+          <div class="flex items-end">
+            <button
+              (click)="clearFilters()"
+              class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg transition-colors flex items-center"
+            >
+              <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              Clear Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Count & Export -->
+        <div class="mt-4 flex items-center justify-between">
+          <span class="text-sm text-gray-500">
+            Showing {{ filteredHistory.length }} of {{ patientHistory.length }} records
+          </span>
+          <button
+            (click)="exportToPdf()"
+            [disabled]="filteredHistory.length === 0"
+            class="inline-flex items-center px-4 py-2 bg-light-blue-600 text-white rounded-lg hover:bg-light-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+          >
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Export PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- No History -->
+      <div *ngIf="!isLoading && !errorMessage && patientHistory.length === 0" class="text-center py-8">
+        <p class="text-gray-600">No consultation history found. Start using our AI assistant or book an appointment!</p>
+      </div>
+
+      <!-- No Results After Filter -->
+      <div *ngIf="!isLoading && patientHistory.length > 0 && filteredHistory.length === 0" class="text-center py-8 bg-gray-50 rounded-lg">
+        <svg class="w-12 h-12 text-gray-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-gray-600">No records match your filters.</p>
+        <button (click)="clearFilters()" class="mt-2 text-light-blue-600 hover:underline">Clear filters</button>
+      </div>
+
+      <!-- History Table -->
+      <table class="styled-table" *ngIf="!isLoading && filteredHistory.length > 0">
+        <thead>
+          <tr>
+            <th class="w-8"></th>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Doctor</th>
+            <th>Symptoms/Reason</th>
+            <th>Results</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let record of filteredHistory; let i = index">
+            <!-- Main Row -->
+            <tr class="cursor-pointer hover:bg-gray-50" (click)="toggleRow(i)">
+              <td class="text-center">
+                <svg
+                  class="w-5 h-5 text-gray-400 transition-transform duration-200"
+                  [class.rotate-90]="isRowExpanded(i)"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </td>
+              <td>{{ record.date | date: 'short' }}</td>
+              <td>
+                <span
+                  [class]="record.type === 'AI' ? 'badge-ai' : 'badge-appointment'"
+                  class="px-2 py-1 rounded text-xs font-semibold"
+                >
+                  {{ record.type }}
+                </span>
+              </td>
+              <td>{{ record.doctorName }}</td>
+              <td class="max-w-xs truncate">{{ record.symptoms.join(', ') || 'N/A' }}</td>
+              <td class="max-w-xs truncate">{{ record.results }}</td>
+              <td>
+                <span
+                  *ngIf="record.status"
+                  [class]="getStatusClass(record.status)"
+                  class="px-2 py-1 rounded text-xs font-semibold"
+                >
+                  {{ record.status }}
+                </span>
+                <span *ngIf="!record.status" class="text-gray-400">-</span>
+              </td>
+            </tr>
+            <!-- Expanded Details Row -->
+            <tr *ngIf="isRowExpanded(i)" class="bg-gray-50">
+              <td colspan="7" class="p-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Full Details</h4>
+                    <div class="space-y-2 text-sm">
+                      <p><span class="font-medium text-gray-600">Date:</span> {{ record.date | date: 'full' }}</p>
+                      <p><span class="font-medium text-gray-600">Doctor:</span> {{ record.doctorName }}</p>
+                      <p><span class="font-medium text-gray-600">Type:</span> {{ record.type === 'AI' ? 'AI Consultation' : 'Doctor Appointment' }}</p>
+                      <p *ngIf="record.status"><span class="font-medium text-gray-600">Status:</span> {{ record.status }}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Symptoms/Reason</h4>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                      <span *ngFor="let symptom of record.symptoms" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                        {{ symptom }}
+                      </span>
+                      <span *ngIf="record.symptoms.length === 0" class="text-gray-400 text-sm">No symptoms recorded</span>
+                    </div>
+                    <h4 class="font-semibold text-gray-700 mb-2">Results/Notes</h4>
+                    <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ record.results || 'No results available' }}</p>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  
+    <!-- Chart Section -->
+    <div class="chart-container">
+      <h2 class="chart-title">Symptoms Analysis</h2>
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="symptomsChartData"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Symptoms"
+        yAxisLabel="Occurrences"
+      >
+      </ngx-charts-bar-vertical>
+    </div>
+  </div>
+  

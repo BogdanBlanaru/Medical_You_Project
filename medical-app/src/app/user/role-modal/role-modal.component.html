@@ -1,0 +1,24 @@
+<app-modal modalID="role">
+    <p class="text-2xl font-bold" heading>Your Role</p>
+  
+    <div class="text-center">
+      <h1 class="text-4xl font-bold text-blue-700 mb-6">What is your role?</h1>
+      <div class="flex justify-center gap-8">
+        <button
+          (click)="selectRole('PATIENT')"
+          class="flex flex-col items-center border-2 border-gray-300"
+        >
+          <img src="assets/images/patient.png" class="w-12 h-12 mb-2"/>
+          <span>Patient</span>
+        </button>
+        <button
+          (click)="selectRole('DOCTOR')"
+          class="flex flex-col items-center border-2 border-gray-300"
+        >
+          <img src="assets/images/doctor.png" class="w-12 h-12 mb-2" />
+          <span>Doctor</span>
+        </button>
+      </div>
+    </div>
+  </app-modal>
+  

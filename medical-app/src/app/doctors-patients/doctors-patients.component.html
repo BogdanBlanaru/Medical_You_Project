@@ -1,0 +1,28 @@
+<app-nav></app-nav>
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl font-bold text-light-blue-700 mb-4">Doctor's Patients</h1>
+  
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Address</th>
+          <th>Last Visit</th>
+          <th>Condition</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let patient of patients">
+          <td>{{ patient.name }}</td>
+          <td>{{ patient.age }}</td>
+          <td>{{ patient.gender }}</td>
+          <td>{{ patient.address }}</td>
+          <td>{{ patient.lastVisit | date }}</td>
+          <td>{{ patient.condition }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  

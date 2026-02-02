@@ -1,0 +1,125 @@
+# ========================================
+# MedicalApp Monorepo .gitignore
+# ========================================
+
+# ==================== OS Files ====================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ==================== IDE / Editors ====================
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Eclipse
+.project
+.classpath
+.settings/
+.factorypath
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# STS
+.apt_generated
+.springBeans
+.sts4-cache
+
+# ==================== Frontend (Angular) ====================
+medical-app/node_modules/
+medical-app/dist/
+medical-app/tmp/
+medical-app/out-tsc/
+medical-app/bazel-out/
+medical-app/.angular/
+medical-app/.sass-cache/
+medical-app/connect.lock
+medical-app/coverage/
+medical-app/libpeerconnection.log
+medical-app/npm-debug.log
+medical-app/yarn-error.log
+medical-app/testem.log
+medical-app/typings/
+medical-app/.history/
+medical-app/chrome-profiler-events*.json
+
+# ==================== Backend (Spring Boot / Maven) ====================
+medical-you/medical-you/target/
+medical-you/medical-you/!.mvn/wrapper/maven-wrapper.jar
+medical-you/medical-you/build/
+medical-you/medical-you/*.log
+medical-you/medical-you/backend.log
+medical-you/medical-you/backend-err.log
+
+# ==================== Uploads & Generated Files ====================
+**/uploads/
+**/logs/
+**/*.log
+
+# ==================== Environment & Secrets ====================
+# Uncomment these if you externalize config:
+# **/application-prod.properties
+# **/application-local.properties
+# **/.env
+# **/.env.local
+# **/.env.production
+
+# ==================== Build Artifacts ====================
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+
+# ==================== Python (hackathon_chatbot) ====================
+hackathon_chatbot/**/__pycache__/
+hackathon_chatbot/**/*.py[cod]
+hackathon_chatbot/**/*$py.class
+hackathon_chatbot/**/.Python
+hackathon_chatbot/**/env/
+hackathon_chatbot/**/venv/
+hackathon_chatbot/**/.venv/
+hackathon_chatbot/**/pip-log.txt
+hackathon_chatbot/**/*.egg-info/
+hackathon_chatbot/**/.eggs/
+
+# ==================== Node.js (signaling-server) ====================
+signaling-server/node_modules/
+signaling-server/npm-debug.log
+signaling-server/yarn-error.log
+
+# ==================== Temp Files ====================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# ==================== Test & Coverage ====================
+**/coverage/
+**/.nyc_output/
+**/test-results/
+**/junit.xml
+
+# ==================== Other ====================
+# Remove empty/unused folders
+BOOT-INF/
+nul
+
+# Claude Code temp files
+.claude/

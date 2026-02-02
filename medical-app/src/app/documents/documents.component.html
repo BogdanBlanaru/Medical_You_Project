@@ -1,0 +1,567 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-8 px-4">
+  <div class="container mx-auto max-w-7xl">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-white mb-2">My Documents</h1>
+      <p class="text-gray-400">Store and organize your medical documents securely</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8" *ngIf="stats">
+      <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-cyan-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white">{{ stats.totalDocuments }}</p>
+            <p class="text-sm text-gray-400">Total Documents</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white">{{ stats.totalSizeFormatted }}</p>
+            <p class="text-sm text-gray-400">Storage Used</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white">{{ stats.folderCount }}</p>
+            <p class="text-sm text-gray-400">Folders</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-pink-500/20 flex items-center justify-center">
+            <svg class="w-5 h-5 text-pink-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-white">{{ recentDocuments.length }}</p>
+            <p class="text-sm text-gray-400">Recent Uploads</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4 mb-6">
+      <div class="flex flex-wrap items-center gap-4">
+        <!-- Search -->
+        <div class="flex-1 min-w-[200px]">
+          <div class="relative">
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                   placeholder="Search documents..."
+                   class="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Folder Filter -->
+        <select [(ngModel)]="selectedFolderId" (ngModelChange)="onFolderChange()"
+                class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+          <option [ngValue]="null">All Folders</option>
+          <option *ngFor="let folder of folders" [ngValue]="folder.id">{{ folder.name }}</option>
+        </select>
+
+        <!-- Type Filter -->
+        <select [(ngModel)]="selectedTypeFilter" (ngModelChange)="onTypeFilterChange()"
+                class="bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+          <option value="">All Types</option>
+          <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
+        </select>
+
+        <!-- View Toggle -->
+        <div class="flex items-center gap-1 bg-gray-700 rounded-lg p-1">
+          <button (click)="viewMode = 'grid'"
+                  [class.bg-cyan-500]="viewMode === 'grid'"
+                  class="p-2 rounded-md transition-colors">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+          </button>
+          <button (click)="viewMode = 'list'"
+                  [class.bg-cyan-500]="viewMode === 'list'"
+                  class="p-2 rounded-md transition-colors">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Actions -->
+        <button (click)="openFolderModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+          </svg>
+          New Folder
+        </button>
+
+        <button (click)="openUploadModal()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          Upload Document
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex gap-6">
+      <!-- Folder Sidebar -->
+      <div class="w-64 shrink-0 hidden lg:block">
+        <div class="bg-gray-800/50 border border-gray-700 rounded-xl p-4">
+          <h3 class="text-white font-semibold mb-4">Folders</h3>
+
+          <!-- All Documents -->
+          <button (click)="selectedFolderId = null; onFolderChange()"
+                  [ngClass]="{'bg-cyan-500/20 text-cyan-400': selectedFolderId === null}"
+                  class="w-full text-left px-3 py-2 rounded-lg mb-2 text-gray-300 hover:bg-gray-700/50 flex items-center gap-2 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            All Documents
+          </button>
+
+          <!-- Folder List -->
+          <div *ngFor="let folder of folderTree" class="mb-1">
+            <div class="flex items-center group">
+              <button (click)="selectedFolderId = folder.id; onFolderChange()"
+                      [ngClass]="{'bg-cyan-500/20 text-cyan-400': selectedFolderId === folder.id}"
+                      class="flex-1 text-left px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-700/50 flex items-center gap-2 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                </svg>
+                {{ folder.name }}
+                <span class="text-xs text-gray-500">({{ folder.documentCount }})</span>
+              </button>
+              <div class="hidden group-hover:flex items-center gap-1">
+                <button (click)="openFolderModal(folder)" class="p-1 text-gray-400 hover:text-white">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                  </svg>
+                </button>
+                <button (click)="deleteFolder(folder)" class="p-1 text-gray-400 hover:text-red-400">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Grid/List -->
+      <div class="flex-1">
+        <!-- Loading -->
+        <div *ngIf="isLoading" class="flex justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-cyan-500"></div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!isLoading && documents.length === 0" class="bg-gray-800/50 border border-gray-700 rounded-xl p-12 text-center">
+          <svg class="w-16 h-16 mx-auto text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <h3 class="text-xl font-semibold text-white mb-2">No documents found</h3>
+          <p class="text-gray-400 mb-4">Upload your first document to get started</p>
+          <button (click)="openUploadModal()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg transition-colors">
+            Upload Document
+          </button>
+        </div>
+
+        <!-- Grid View -->
+        <div *ngIf="!isLoading && documents.length > 0 && viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <div *ngFor="let doc of documents"
+               class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-colors group">
+            <!-- Thumbnail -->
+            <div class="h-32 bg-gray-700/50 flex items-center justify-center relative">
+              <img *ngIf="doc.isImage && doc.thumbnailUrl" [src]="getThumbnailUrl(doc)" class="w-full h-full object-cover" alt="">
+              <div *ngIf="!doc.isImage || !doc.thumbnailUrl" class="text-4xl text-gray-500">
+                <svg *ngIf="doc.isPdf" class="w-12 h-12" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 2l5 5h-5V4zm-3 9.5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5.67-1.5 1.5-1.5 1.5.67 1.5 1.5zm3.5-1.5h-1v3H11v-3h-1v-.5c0-.55.45-1 1-1h1.5c.55 0 1 .45 1 1v.5zm3 2h-2v1h2v1h-3v-4h3v1z"/>
+                </svg>
+                <svg *ngIf="!doc.isPdf" class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+
+              <!-- Type Badge -->
+              <span class="absolute top-2 left-2 px-2 py-1 text-xs rounded-full"
+                    [style.background-color]="getTypeInfo(doc.documentType).color + '20'"
+                    [style.color]="getTypeInfo(doc.documentType).color">
+                {{ getTypeInfo(doc.documentType).label }}
+              </span>
+
+              <!-- Share Badge -->
+              <span *ngIf="doc.isSharedWithDoctor" class="absolute top-2 right-2 p-1 bg-green-500/20 rounded-full">
+                <svg class="w-3 h-3 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                </svg>
+              </span>
+            </div>
+
+            <!-- Info -->
+            <div class="p-4">
+              <h4 class="text-white font-medium truncate mb-1">{{ doc.title }}</h4>
+              <p class="text-sm text-gray-400 mb-2">{{ doc.fileSizeFormatted }} • {{ formatDate(doc.uploadedAt) }}</p>
+
+              <!-- Actions -->
+              <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="previewDoc(doc)" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                  </svg>
+                </button>
+                <button (click)="downloadDoc(doc)" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                </button>
+                <button (click)="toggleShare(doc)" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg"
+                        [class.text-green-400]="doc.isSharedWithDoctor" [class.text-gray-300]="!doc.isSharedWithDoctor">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"/>
+                  </svg>
+                </button>
+                <button (click)="confirmDelete(doc)" class="p-2 bg-gray-700 hover:bg-red-600 rounded-lg text-gray-300 hover:text-white">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View -->
+        <div *ngIf="!isLoading && documents.length > 0 && viewMode === 'list'" class="bg-gray-800/50 border border-gray-700 rounded-xl overflow-hidden">
+          <table class="w-full">
+            <thead class="bg-gray-700/50">
+              <tr>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-400">Name</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-400">Type</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-400">Size</th>
+                <th class="text-left px-4 py-3 text-sm font-medium text-gray-400">Date</th>
+                <th class="text-right px-4 py-3 text-sm font-medium text-gray-400">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-700">
+              <tr *ngFor="let doc of documents" class="hover:bg-gray-700/30 transition-colors">
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded bg-gray-700 flex items-center justify-center text-gray-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <p class="text-white font-medium">{{ doc.title }}</p>
+                      <p class="text-xs text-gray-500">{{ doc.fileName }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 text-xs rounded-full"
+                        [style.background-color]="getTypeInfo(doc.documentType).color + '20'"
+                        [style.color]="getTypeInfo(doc.documentType).color">
+                    {{ getTypeInfo(doc.documentType).label }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-gray-400 text-sm">{{ doc.fileSizeFormatted }}</td>
+                <td class="px-4 py-3 text-gray-400 text-sm">{{ formatDate(doc.uploadedAt) }}</td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    <button (click)="downloadDoc(doc)" class="p-1.5 text-gray-400 hover:text-cyan-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                      </svg>
+                    </button>
+                    <button (click)="confirmDelete(doc)" class="p-1.5 text-gray-400 hover:text-red-400">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="flex items-center justify-center gap-2 mt-6">
+          <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
+                  class="px-3 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+          </button>
+          <span class="text-gray-400">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
+          <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage === totalPages - 1"
+                  class="px-3 py-2 bg-gray-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+            Next
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div *ngIf="showUploadModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-white">Upload Document</h2>
+        <button (click)="closeUploadModal()" class="text-gray-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- File Drop Zone -->
+      <div class="border-2 border-dashed border-gray-600 rounded-xl p-8 text-center mb-6 hover:border-cyan-500 transition-colors">
+        <input type="file" id="fileInput" (change)="onFileSelected($event)" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx">
+        <label for="fileInput" class="cursor-pointer">
+          <svg *ngIf="!selectedFile" class="w-12 h-12 mx-auto text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p *ngIf="!selectedFile" class="text-gray-400">Click to select or drag and drop</p>
+          <p *ngIf="!selectedFile" class="text-sm text-gray-500 mt-1">PDF, Images, Word, Excel (Max 50MB)</p>
+
+          <div *ngIf="selectedFile" class="flex items-center justify-center gap-3">
+            <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <div class="text-left">
+              <p class="text-white font-medium">{{ selectedFile.name }}</p>
+              <p class="text-sm text-gray-400">{{ (selectedFile.size / 1024 / 1024).toFixed(2) }} MB</p>
+            </div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Form Fields -->
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Title *</label>
+          <input type="text" [(ngModel)]="uploadForm.title" required
+                 class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Document Type *</label>
+          <select [(ngModel)]="uploadForm.documentType"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <option *ngFor="let type of documentTypes" [value]="type.value">{{ type.label }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Description</label>
+          <textarea [(ngModel)]="uploadForm.description" rows="3"
+                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Folder</label>
+          <select [(ngModel)]="uploadForm.folderId"
+                  class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <option [ngValue]="undefined">No folder</option>
+            <option *ngFor="let folder of folders" [ngValue]="folder.id">{{ folder.name }}</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Document Date</label>
+          <input type="date" [(ngModel)]="uploadForm.documentDate"
+                 class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Tags</label>
+          <div class="flex gap-2 mb-2 flex-wrap">
+            <span *ngFor="let tag of uploadForm.tags" class="bg-gray-700 text-gray-300 px-2 py-1 rounded text-sm flex items-center gap-1">
+              {{ tag }}
+              <button (click)="removeTag(tag)" class="text-gray-400 hover:text-red-400">&times;</button>
+            </span>
+          </div>
+          <div class="flex gap-2">
+            <input type="text" [(ngModel)]="tagInput" (keyup.enter)="addTag()" placeholder="Add tag..."
+                   class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+            <button (click)="addTag()" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg text-white">Add</button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="shareWithDoctor" [(ngModel)]="uploadForm.shareWithDoctor" class="rounded bg-gray-700 border-gray-600 text-cyan-500 focus:ring-cyan-500">
+          <label for="shareWithDoctor" class="text-gray-300">Share with my doctor</label>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3 mt-6">
+        <button (click)="closeUploadModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button (click)="uploadDocument()" [disabled]="!selectedFile || !uploadForm.title || isUploading"
+                class="flex-1 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+          <span *ngIf="!isUploading">Upload</span>
+          <span *ngIf="isUploading" class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            Uploading...
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Folder Modal -->
+<div *ngIf="showFolderModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-md">
+    <div class="p-6">
+      <h2 class="text-xl font-bold text-white mb-6">{{ editingFolderId ? 'Edit Folder' : 'New Folder' }}</h2>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-400 mb-1">Folder Name *</label>
+          <input type="text" [(ngModel)]="folderForm.name" required
+                 class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500">
+        </div>
+      </div>
+
+      <div class="flex gap-3 mt-6">
+        <button (click)="closeFolderModal()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg">Cancel</button>
+        <button (click)="saveFolder()" [disabled]="!folderForm.name" class="flex-1 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white py-2 rounded-lg">
+          {{ editingFolderId ? 'Save' : 'Create' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div *ngIf="showDeleteConfirm" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-md p-6">
+    <div class="text-center">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+        <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+        </svg>
+      </div>
+      <h3 class="text-xl font-bold text-white mb-2">Delete Document?</h3>
+      <p class="text-gray-400 mb-6">This action cannot be undone. The document "{{ documentToDelete?.title }}" will be permanently deleted.</p>
+      <div class="flex gap-3">
+        <button (click)="cancelDelete()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg">Cancel</button>
+        <button (click)="deleteDoc()" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal -->
+<div *ngIf="showPreviewModal && previewDocument" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4">
+  <div class="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-5xl max-h-[95vh] flex flex-col">
+    <!-- Header -->
+    <div class="flex items-center justify-between p-4 border-b border-gray-700">
+      <div class="flex items-center gap-3">
+        <span class="px-2 py-1 text-xs rounded-full"
+              [style.background-color]="getTypeInfo(previewDocument.documentType).color + '20'"
+              [style.color]="getTypeInfo(previewDocument.documentType).color">
+          {{ getTypeInfo(previewDocument.documentType).label }}
+        </span>
+        <h2 class="text-lg font-bold text-white">{{ previewDocument.title }}</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="downloadDoc(previewDocument)" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+        </button>
+        <button (click)="closePreview()" class="p-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-auto p-4">
+      <!-- Image Preview -->
+      <div *ngIf="previewDocument.isImage" class="flex items-center justify-center h-full">
+        <img [src]="getPreviewUrl(previewDocument)" alt="{{ previewDocument.title }}"
+             class="max-w-full max-h-full object-contain rounded-lg">
+      </div>
+
+      <!-- PDF Preview -->
+      <div *ngIf="previewDocument.isPdf" class="h-full">
+        <iframe [src]="getPreviewUrl(previewDocument)"
+                class="w-full h-full min-h-[70vh] rounded-lg border border-gray-600"
+                frameborder="0">
+        </iframe>
+      </div>
+
+      <!-- Other Files - No Preview -->
+      <div *ngIf="!previewDocument.isImage && !previewDocument.isPdf" class="flex flex-col items-center justify-center h-full py-12">
+        <svg class="w-24 h-24 text-gray-600 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="text-xl font-semibold text-white mb-2">Preview not available</h3>
+        <p class="text-gray-400 mb-4">This file type cannot be previewed in the browser.</p>
+        <button (click)="downloadDoc(previewDocument)" class="bg-cyan-600 hover:bg-cyan-700 text-white px-6 py-2 rounded-lg flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          Download to view
+        </button>
+      </div>
+    </div>
+
+    <!-- Footer with metadata -->
+    <div class="p-4 border-t border-gray-700 bg-gray-800/50">
+      <div class="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+        <span>{{ previewDocument.fileName }}</span>
+        <span>•</span>
+        <span>{{ previewDocument.fileSizeFormatted }}</span>
+        <span>•</span>
+        <span>Uploaded: {{ formatDate(previewDocument.uploadedAt) }}</span>
+        <span *ngIf="previewDocument.description" class="text-gray-500">| {{ previewDocument.description }}</span>
+      </div>
+      <div *ngIf="previewDocument.tags && previewDocument.tags.length > 0" class="mt-2 flex flex-wrap gap-2">
+        <span *ngFor="let tag of previewDocument.tags" class="px-2 py-1 bg-gray-700 text-gray-300 rounded text-xs">
+          {{ tag }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

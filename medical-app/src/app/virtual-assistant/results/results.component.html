@@ -1,0 +1,25 @@
+<div *ngIf="predictionResult; else noResult">
+  <div class="recommendations bg-light-red p-4 rounded-md">
+    <h3 class="text-red-600 font-bold text-lg">Recommendations</h3>
+    <p class="text-black-800"><strong>Urgency:</strong> <span class="text-gray-800">{{ predictionResult.recommendations?.urgency }}</span></p>
+    <p class="text-black-800"><strong>Specialist:</strong> <span class="text-gray-800">{{ predictionResult.recommendations?.specialist }}</span></p>
+  </div>
+
+  <div class="diagnosis mt-6">
+    <h3 class="text-blue-600 font-bold text-lg">Diagnosis: <span class="text-blue-800">{{ predictionResult.prognosis }}</span></h3>
+    <p class="text-gray-800">{{ predictionResult.description }}</p>
+  </div>
+
+  <div class="precautions mt-6">
+    <h3 class="text-green-600 font-bold text-lg">Precautions</h3>
+    <ul>
+      <li *ngFor="let precaution of predictionResult.precautions" class="text-gray-800">
+        {{ precaution }}
+      </li>
+    </ul>
+  </div>
+</div>
+
+<ng-template #noResult>
+  <p class="text-red-600">No results available. Please try again.</p>
+</ng-template>

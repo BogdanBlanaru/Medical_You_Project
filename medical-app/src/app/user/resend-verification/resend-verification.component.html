@@ -1,0 +1,101 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
+  <div class="max-w-md w-full bg-gray-800 rounded-lg shadow-xl p-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <div class="mb-4">
+        <svg class="mx-auto h-16 w-16 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+      </div>
+      <h1 class="text-3xl font-bold text-white mb-2">Resend Verification Email</h1>
+      <p class="text-gray-400">
+        Enter your email address and we'll send you a new verification link.
+      </p>
+    </div>
+
+    <!-- Alert -->
+    <app-alert *ngIf="showAlert" [color]="alertColor">
+      {{ alertMsg }}
+    </app-alert>
+
+    <!-- Success Message -->
+    <div *ngIf="emailSent" class="text-center">
+      <div class="mb-6">
+        <svg class="mx-auto h-16 w-16 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <p class="text-gray-300 mb-6">
+        If an unverified account exists with this email, you will receive a new verification link. Please check your inbox and spam folder.
+      </p>
+      <button
+        (click)="goBack()"
+        class="w-full bg-indigo-500 text-white py-2 px-4 rounded-lg hover:bg-indigo-600 transition">
+        Back to Home
+      </button>
+    </div>
+
+    <!-- Form -->
+    <form *ngIf="!emailSent" [formGroup]="resendForm" (ngSubmit)="onSubmit()">
+      <!-- Role Selection -->
+      <div class="mb-4">
+        <label class="block text-gray-300 mb-2">I am a:</label>
+        <div class="flex space-x-4">
+          <label class="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              formControlName="role"
+              value="PATIENT"
+              class="form-radio text-indigo-500 focus:ring-indigo-500">
+            <span class="ml-2 text-gray-300">Patient</span>
+          </label>
+          <label class="flex items-center cursor-pointer">
+            <input
+              type="radio"
+              formControlName="role"
+              value="DOCTOR"
+              class="form-radio text-indigo-500 focus:ring-indigo-500">
+            <span class="ml-2 text-gray-300">Doctor</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Email -->
+      <div class="mb-6">
+        <label class="block text-gray-300 mb-2">Email Address</label>
+        <input
+          type="email"
+          formControlName="email"
+          class="w-full py-3 px-4 bg-gray-700 text-white border border-gray-600 rounded-lg
+            focus:outline-none focus:border-indigo-500 transition"
+          placeholder="Enter your email">
+        <p *ngIf="resendForm.get('email')?.touched && resendForm.get('email')?.errors?.['required']"
+           class="text-red-400 text-sm mt-1">
+          Email is required
+        </p>
+        <p *ngIf="resendForm.get('email')?.touched && resendForm.get('email')?.errors?.['email']"
+           class="text-red-400 text-sm mt-1">
+          Please enter a valid email address
+        </p>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        [disabled]="resendForm.invalid || inSubmission"
+        class="w-full bg-indigo-500 text-white py-3 px-4 rounded-lg font-semibold
+          hover:bg-indigo-600 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ inSubmission ? 'Sending...' : 'Send Verification Email' }}
+      </button>
+
+      <!-- Back Link -->
+      <div class="text-center mt-6">
+        <a (click)="goBack()" class="text-indigo-400 hover:text-indigo-300 cursor-pointer transition">
+          &larr; Back to Home
+        </a>
+      </div>
+    </form>
+  </div>
+</div>

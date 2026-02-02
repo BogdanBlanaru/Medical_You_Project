@@ -1,0 +1,51 @@
+<app-nav></app-nav>
+
+<div class="container mx-auto mt-8">
+  <h1 class="text-3xl font-bold text-center text-light-blue-700 mb-8">About Our Medical App</h1>
+
+  <!-- Satisfaction Pie Chart -->
+  <div class="chart-content-section mb-12">
+    <div class="chart">
+      <ngx-charts-pie-chart
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="satisfactionData"
+        [legend]="true"
+        [doughnut]="true"
+        [labels]="true"
+      ></ngx-charts-pie-chart>
+    </div>
+    <div class="content">
+      <h2 class="text-xl font-bold text-gray-700 mt-12 ml-6">Patient Satisfaction</h2>
+      <p class="text-gray-600 mb-2 mt-4 ml-6">
+        Our app has a high satisfaction rate, with 65% of patients reporting they are "Very Satisfied."
+        This demonstrates our commitment to providing quality healthcare solutions.
+      </p>
+    </div>
+  </div>
+
+  <!-- Doctor Distribution Bar Chart -->
+  <div class="chart-content-section mb-12">
+    <div class="chart">
+      <ngx-charts-bar-vertical
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="doctorDistribution"
+        [xAxis]="true"
+        [yAxis]="true"
+        [legend]="true"
+        [showXAxisLabel]="true"
+        [showYAxisLabel]="true"
+        xAxisLabel="Specialty"
+        yAxisLabel="Number of Doctors"
+      ></ngx-charts-bar-vertical>
+    </div>
+    <div class="content">
+      <h2 class="text-xl font-bold text-gray-700 mt-16 ml-6">Doctor Distribution</h2>
+      <p class="text-gray-600 mb-2 mt-4 ml-6">
+        Our platform connects patients to over 175 doctors, ranging from General Practitioners to
+        Specialists and Surgeons. This diversity ensures patients receive expert care for their
+        specific needs.
+      </p>
+    </div>
+  </div>

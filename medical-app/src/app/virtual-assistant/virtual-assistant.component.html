@@ -1,0 +1,20 @@
+<div class="container mx-auto py-16 px-6 bg-light-blue-50">
+  <div class="flex flex-col md:flex-row gap-6">
+    <!-- Left Sidebar -->
+    <aside class="w-full md:w-1/4">
+      <nav class="space-y-4">
+        <a routerLink="introduction" routerLinkActive="active">Introduction</a>
+        <a routerLink="patient" routerLinkActive="active">Patient</a>
+        <a routerLink="symptoms" routerLinkActive="active">Symptoms</a>
+        <a routerLink="regions" routerLinkActive="active">Regions</a>
+        <a routerLink="interview" routerLinkActive="active">Interview</a>
+        <a routerLink="results" routerLinkActive="active">Results</a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="w-full md:w-3/4">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

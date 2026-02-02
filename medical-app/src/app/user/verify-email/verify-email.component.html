@@ -1,0 +1,63 @@
+<div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center px-4">
+  <div class="max-w-md w-full bg-gray-800 rounded-lg shadow-xl p-8">
+
+    <!-- Loading State -->
+    <div *ngIf="verifying" class="text-center">
+      <div class="animate-spin rounded-full h-16 w-16 border-b-2 border-indigo-500 mx-auto mb-6"></div>
+      <h2 class="text-2xl font-bold text-white mb-2">Verifying Your Email</h2>
+      <p class="text-gray-400">Please wait while we verify your email address...</p>
+    </div>
+
+    <!-- Success State -->
+    <div *ngIf="!verifying && verified" class="text-center">
+      <div class="mb-6">
+        <svg class="mx-auto h-20 w-20 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h2 class="text-2xl font-bold text-white mb-4">Email Verified!</h2>
+      <p class="text-gray-400 mb-6">
+        Your email has been successfully verified. You can now log in to your account and access all features.
+      </p>
+      <button
+        (click)="goToLogin()"
+        class="w-full bg-indigo-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-600 transition">
+        Continue to Login
+      </button>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="!verifying && !verified" class="text-center">
+      <div class="mb-6">
+        <svg *ngIf="errorCode === 'TOKEN_EXPIRED'" class="mx-auto h-20 w-20 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <svg *ngIf="errorCode !== 'TOKEN_EXPIRED'" class="mx-auto h-20 w-20 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+        </svg>
+      </div>
+
+      <h2 class="text-2xl font-bold text-white mb-4">
+        {{ errorCode === 'TOKEN_EXPIRED' ? 'Link Expired' : 'Verification Failed' }}
+      </h2>
+
+      <p class="text-gray-400 mb-6">{{ errorMessage }}</p>
+
+      <div class="space-y-3">
+        <button
+          (click)="resendVerification()"
+          class="w-full bg-indigo-500 text-white py-3 px-4 rounded-lg font-semibold hover:bg-indigo-600 transition">
+          Request New Verification Link
+        </button>
+        <button
+          (click)="goToLogin()"
+          class="w-full bg-gray-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-gray-700 transition">
+          Back to Home
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

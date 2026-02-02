@@ -1,0 +1,407 @@
+<div class="min-h-screen bg-gray-50 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Alert Message -->
+    <div *ngIf="showAlert"
+         class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300"
+         [ngClass]="{
+           'bg-green-500 text-white': alertColor === 'green',
+           'bg-red-500 text-white': alertColor === 'red',
+           'bg-yellow-500 text-white': alertColor === 'yellow'
+         }">
+      {{ alertMsg }}
+    </div>
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">💊 Medicamente</h1>
+        <p class="mt-1 text-gray-500">Gestionează medicamentele și tratamentele</p>
+      </div>
+      <button (click)="openAddModal()"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Adaugă medicament
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading && dashboard" class="space-y-6">
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Active</p>
+              <p class="text-3xl font-bold text-gray-900">{{ dashboard.activeMedications }}</p>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">💊</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Luate azi</p>
+              <p class="text-3xl font-bold text-green-600">{{ dashboard.takenToday }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">✅</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Rămase azi</p>
+              <p class="text-3xl font-bold text-orange-500">{{ dashboard.remainingToday }}</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">⏳</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-gray-500">Aderență</p>
+              <p class="text-3xl font-bold" [ngClass]="getAdherenceClass(dashboard.overallAdherence)">
+                {{ dashboard.overallAdherence }}%
+              </p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">📊</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refill Alert -->
+      <div *ngIf="dashboard.medicationsNeedingRefill > 0"
+           class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <div class="flex items-center">
+          <span class="text-2xl mr-3">⚠️</span>
+          <div>
+            <p class="font-medium text-yellow-800">
+              {{ dashboard.medicationsNeedingRefill }} medicament(e) au nevoie de reîncărcare
+            </p>
+            <button (click)="changeTab('refill')" class="text-sm text-yellow-600 hover:text-yellow-800 underline">
+              Vezi lista →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="border-b border-gray-200">
+          <nav class="flex -mb-px">
+            <button (click)="changeTab('today')"
+                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors"
+                    [ngClass]="activeTab === 'today' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'">
+              📅 Azi ({{ dashboard.todaySchedule.length }})
+            </button>
+            <button (click)="changeTab('all')"
+                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors"
+                    [ngClass]="activeTab === 'all' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'">
+              📋 Toate
+            </button>
+            <button (click)="changeTab('refill')"
+                    class="px-6 py-4 text-sm font-medium border-b-2 transition-colors"
+                    [ngClass]="activeTab === 'refill' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'">
+              🔄 Reîncărcare ({{ dashboard.needRefill.length }})
+            </button>
+          </nav>
+        </div>
+
+        <!-- Medications List -->
+        <div class="p-4">
+          <div *ngIf="medications.length === 0" class="text-center py-12">
+            <span class="text-6xl mb-4 block">💊</span>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">
+              {{ activeTab === 'today' ? 'Nicio doză programată azi' :
+                 activeTab === 'refill' ? 'Niciun medicament de reîncărcat' :
+                 'Niciun medicament adăugat' }}
+            </h3>
+            <button *ngIf="activeTab !== 'refill'" (click)="openAddModal()"
+                    class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+              Adaugă primul medicament
+            </button>
+          </div>
+
+          <div class="space-y-3">
+            <div *ngFor="let med of medications"
+                 class="bg-gray-50 rounded-xl p-4 border-l-4 hover:shadow-md transition-shadow"
+                 [style.border-left-color]="med.color || '#3B82F6'">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl font-bold"
+                       [style.background-color]="med.color || '#3B82F6'">
+                    {{ med.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">{{ med.name }}</h3>
+                    <p class="text-sm text-gray-500">
+                      {{ med.dosage || 'Fără doză specificată' }} • {{ getFrequencyLabel(med.frequency) }}
+                    </p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <span class="text-xs px-2 py-0.5 rounded-full" [ngClass]="getStatusClass(med.status)">
+                        {{ getStatusLabel(med.status) }}
+                      </span>
+                      <span *ngIf="med.pillsRemaining !== null" class="text-xs text-gray-500">
+                        📦 {{ med.pillsRemaining }} pastile rămase
+                      </span>
+                      <span *ngIf="med.needsRefill" class="text-xs text-yellow-600 font-medium">
+                        ⚠️ Reîncărcare necesară
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <!-- Quick Take Button -->
+                  <button *ngIf="med.status === MedicationStatus.ACTIVE"
+                          (click)="openTakeModal(med)"
+                          class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center gap-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Luat
+                  </button>
+
+                  <!-- Actions Dropdown -->
+                  <div class="relative group">
+                    <button class="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"/>
+                      </svg>
+                    </button>
+                    <div class="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                      <button (click)="openEditModal(med)"
+                              class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                        ✏️ Editează
+                      </button>
+                      <button *ngIf="med.status === MedicationStatus.ACTIVE" (click)="pauseMedication(med)"
+                              class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                        ⏸️ Pauză
+                      </button>
+                      <button *ngIf="med.status === MedicationStatus.PAUSED" (click)="resumeMedication(med)"
+                              class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                        ▶️ Reia
+                      </button>
+                      <button *ngIf="med.status === MedicationStatus.ACTIVE" (click)="completeMedication(med)"
+                              class="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                        ✅ Finalizează
+                      </button>
+                      <hr class="my-1">
+                      <button (click)="deleteMedication(med)"
+                              class="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2">
+                        🗑️ Șterge
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent logs -->
+              <div *ngIf="med.recentLogs && med.recentLogs.length > 0" class="mt-3 pt-3 border-t border-gray-200">
+                <p class="text-xs text-gray-500 mb-2">Ultimele înregistrări:</p>
+                <div class="flex flex-wrap gap-2">
+                  <span *ngFor="let log of med.recentLogs.slice(0, 5)"
+                        class="text-xs px-2 py-1 rounded"
+                        [ngClass]="{
+                          'bg-green-100 text-green-700': log.status === 'TAKEN',
+                          'bg-yellow-100 text-yellow-700': log.status === 'SKIPPED',
+                          'bg-red-100 text-red-700': log.status === 'MISSED'
+                        }">
+                    {{ getLogStatusLabel(log.status) }} - {{ formatTime(log.createdAt) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!isLoading && !dashboard" class="bg-white rounded-xl shadow-sm p-12 text-center">
+      <span class="text-6xl mb-6 block">💊</span>
+      <h2 class="text-2xl font-bold text-gray-900 mb-3">Gestionează-ți medicamentele</h2>
+      <p class="text-gray-500 mb-6">
+        Adaugă medicamentele tale pentru a primi remindere și a urmări aderența la tratament.
+      </p>
+      <button (click)="openAddModal()"
+              class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Adaugă primul medicament
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div *ngIf="showAddModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div class="fixed inset-0 bg-black bg-opacity-50" (click)="closeAddModal()"></div>
+
+    <div class="relative bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 z-10 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">
+          {{ selectedMedication ? 'Editează medicament' : 'Adaugă medicament' }}
+        </h3>
+        <button (click)="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="medicationForm" (ngSubmit)="saveMedication()" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nume medicament *</label>
+          <input type="text" formControlName="name"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                 placeholder="Ex: Paracetamol">
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Doză</label>
+            <input type="text" formControlName="dosage"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   placeholder="Ex: 500mg">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Frecvență *</label>
+            <select formControlName="frequency"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <option *ngFor="let freq of frequencies" [value]="freq">{{ getFrequencyLabel(freq) }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ore specifice (separate prin virgulă)</label>
+          <input type="text" formControlName="specificTimes"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                 placeholder="Ex: 08:00, 14:00, 20:00">
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Instrucțiuni</label>
+          <textarea formControlName="instructions" rows="2"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Ex: A se lua după masă cu apă"></textarea>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Data început *</label>
+            <input type="date" formControlName="startDate"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Data sfârșit</label>
+            <input type="date" formControlName="endDate"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pastile rămase</label>
+            <input type="number" formControlName="pillsRemaining"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   placeholder="Ex: 30">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Pastile/doză</label>
+            <input type="number" formControlName="pillsPerDose"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   min="1">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Refill alert (zile)</label>
+            <input type="number" formControlName="refillReminderDays"
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                   min="1">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Culoare</label>
+          <div class="flex gap-2">
+            <button *ngFor="let c of colors" type="button"
+                    (click)="medicationForm.patchValue({color: c})"
+                    class="w-8 h-8 rounded-full border-2 transition-transform hover:scale-110"
+                    [style.background-color]="c"
+                    [ngClass]="medicationForm.get('color')?.value === c ? 'border-gray-800 scale-110' : 'border-transparent'">
+            </button>
+          </div>
+        </div>
+
+        <div class="flex space-x-3 pt-4">
+          <button type="button" (click)="closeAddModal()"
+                  class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+            Anulează
+          </button>
+          <button type="submit" [disabled]="medicationForm.invalid"
+                  class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50">
+            {{ selectedMedication ? 'Salvează' : 'Adaugă' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Take/Skip Modal -->
+<div *ngIf="showTakeModal && selectedMedication" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div class="fixed inset-0 bg-black bg-opacity-50" (click)="closeTakeModal()"></div>
+
+    <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6 z-10">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center text-white text-2xl font-bold"
+             [style.background-color]="selectedMedication.color || '#3B82F6'">
+          {{ selectedMedication.name.charAt(0).toUpperCase() }}
+        </div>
+        <h3 class="text-xl font-semibold text-gray-900">{{ selectedMedication.name }}</h3>
+        <p class="text-gray-500">{{ selectedMedication.dosage || 'Fără doză specificată' }}</p>
+      </div>
+
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Note (opțional)</label>
+        <textarea [(ngModel)]="takeNotes" rows="2"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="Ex: Luat cu întârziere din cauza..."></textarea>
+      </div>
+
+      <div class="flex space-x-3">
+        <button (click)="skipMedication()"
+                class="flex-1 px-4 py-3 border border-yellow-500 text-yellow-600 rounded-lg hover:bg-yellow-50 font-medium">
+          ⏭️ Sări
+        </button>
+        <button (click)="takeMedication()"
+                class="flex-1 px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium">
+          ✅ Am luat
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

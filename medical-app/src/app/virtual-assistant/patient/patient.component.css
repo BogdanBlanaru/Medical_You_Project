@@ -1,0 +1,15 @@
+/* Add consistent styles to match the theme */
+.container {
+    font-family: 'Arial', sans-serif;
+  }
+  
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  button:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s;
+  }
+  

@@ -1,0 +1,357 @@
+<div class="min-h-screen bg-gray-50 py-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+    <!-- Alert Message -->
+    <div *ngIf="showAlert"
+         class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300"
+         [ngClass]="{
+           'bg-green-500 text-white': alertColor === 'green',
+           'bg-red-500 text-white': alertColor === 'red',
+           'bg-yellow-500 text-white': alertColor === 'yellow'
+         }">
+      {{ alertMsg }}
+    </div>
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Health Tracker</h1>
+        <p class="mt-1 text-gray-500">Monitorizează-ți sănătatea zilnic</p>
+      </div>
+      <button (click)="openAddModal()"
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Adaugă măsurătoare
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading && dashboard" class="space-y-8">
+
+      <!-- Alerts Section -->
+      <div *ngIf="dashboard.unacknowledgedAlerts > 0" class="mb-6">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">
+          🔔 Alerte Active ({{ dashboard.unacknowledgedAlerts }})
+        </h2>
+        <div class="space-y-2">
+          <div *ngFor="let alert of dashboard.recentAlerts"
+               [ngClass]="getSeverityClass(alert.severity)"
+               class="p-4 rounded-lg border flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="text-2xl mr-3">{{ getSeverityIcon(alert.severity) }}</span>
+              <div>
+                <p class="font-medium">{{ alert.message }}</p>
+                <p class="text-sm opacity-75">{{ formatDate(alert.createdAt) }}</p>
+              </div>
+            </div>
+            <button *ngIf="!alert.isAcknowledged"
+                    (click)="acknowledgeAlert(alert)"
+                    class="px-3 py-1 bg-white bg-opacity-50 rounded hover:bg-opacity-100 transition-colors text-sm">
+              Confirm
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div *ngFor="let item of statsArray"
+             (click)="selectType(item.type)"
+             class="bg-white rounded-xl shadow-sm border-2 p-5 cursor-pointer transition-all hover:shadow-md"
+             [ngClass]="{ 'border-blue-500 ring-2 ring-blue-200': selectedType === item.type, 'border-transparent': selectedType !== item.type }">
+
+          <div class="flex items-center justify-between mb-3">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center"
+                 [style.background-color]="getTypeInfo(item.type).color + '20'">
+              <span class="text-2xl" [style.color]="getTypeInfo(item.type).color">
+                {{ item.type === 'BLOOD_GLUCOSE' ? '🩸' :
+                   item.type === 'BLOOD_PRESSURE' ? '❤️' :
+                   item.type === 'HEART_RATE' ? '💓' :
+                   item.type === 'WEIGHT' ? '⚖️' :
+                   item.type === 'TEMPERATURE' ? '🌡️' :
+                   item.type === 'OXYGEN_SATURATION' ? '💨' :
+                   item.type === 'STEPS' ? '🚶' : '📊' }}
+              </span>
+            </div>
+            <span class="text-sm px-2 py-1 rounded-full"
+                  [ngClass]="getTrendClass(item.stats.trend)">
+              {{ getTrendIcon(item.stats.trend) }}
+              {{ item.stats.trendPercentage > 0 ? '+' : '' }}{{ item.stats.trendPercentage }}%
+            </span>
+          </div>
+
+          <h3 class="text-sm font-medium text-gray-500">{{ getTypeInfo(item.type).nameRo }}</h3>
+
+          <div class="mt-1">
+            <span class="text-2xl font-bold text-gray-900">
+              {{ item.stats.latestValue || '—' }}
+              <span *ngIf="item.stats.secondaryLatestValue">/{{ item.stats.secondaryLatestValue }}</span>
+            </span>
+            <span class="text-sm text-gray-500 ml-1">{{ item.stats.unit }}</span>
+          </div>
+
+          <div class="mt-2 text-xs text-gray-400">
+            <span *ngIf="item.stats.latestMeasuredAt">{{ formatDate(item.stats.latestMeasuredAt) }}</span>
+            <span *ngIf="!item.stats.latestMeasuredAt">Nicio înregistrare</span>
+          </div>
+
+          <div class="mt-3 flex justify-between text-xs text-gray-500">
+            <span>Min: {{ item.stats.minValue || '—' }}</span>
+            <span>Avg: {{ item.stats.averageValue || '—' }}</span>
+            <span>Max: {{ item.stats.maxValue || '—' }}</span>
+          </div>
+        </div>
+
+        <!-- Add New Type Card -->
+        <div (click)="openAddModal()"
+             class="bg-gray-100 rounded-xl border-2 border-dashed border-gray-300 p-5 cursor-pointer hover:bg-gray-200 transition-colors flex flex-col items-center justify-center min-h-[180px]">
+          <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center mb-2">
+            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+          </div>
+          <span class="text-sm text-gray-500">Adaugă măsurătoare nouă</span>
+        </div>
+      </div>
+
+      <!-- Chart Section -->
+      <div *ngIf="selectedType && selectedStats" class="bg-white rounded-xl shadow-sm p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-semibold text-gray-800">
+            {{ getSelectedTypeInfo()?.nameRo }} - Evoluție
+          </h2>
+          <div class="flex space-x-2">
+            <button (click)="chartDays = 7; updateChart()"
+                    class="px-3 py-1 rounded text-sm"
+                    [ngClass]="chartDays === 7 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+              7 zile
+            </button>
+            <button (click)="chartDays = 30; updateChart()"
+                    class="px-3 py-1 rounded text-sm"
+                    [ngClass]="chartDays === 30 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+              30 zile
+            </button>
+            <button (click)="chartDays = 90; updateChart()"
+                    class="px-3 py-1 rounded text-sm"
+                    [ngClass]="chartDays === 90 ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'">
+              90 zile
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="selectedStats.chartData && selectedStats.chartData.length > 0">
+          <apx-chart
+            [series]="chartOptions.series!"
+            [chart]="chartOptions.chart!"
+            [xaxis]="chartOptions.xaxis!"
+            [stroke]="chartOptions.stroke!"
+            [markers]="chartOptions.markers!"
+            [yaxis]="chartOptions.yaxis!"
+            [grid]="chartOptions.grid!"
+            [tooltip]="chartOptions.tooltip!"
+            [dataLabels]="chartOptions.dataLabels!"
+            [title]="chartOptions.title!"
+            [legend]="chartOptions.legend!"
+            [fill]="chartOptions.fill!"
+            [colors]="chartOptions.colors!">
+          </apx-chart>
+        </div>
+
+        <div *ngIf="!selectedStats.chartData || selectedStats.chartData.length === 0"
+             class="py-12 text-center text-gray-500">
+          <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <p>Nu există date pentru grafic în această perioadă</p>
+          <button (click)="openAddModal(selectedType!)"
+                  class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+            Adaugă prima măsurătoare
+          </button>
+        </div>
+      </div>
+
+      <!-- Recent Readings Table -->
+      <div *ngIf="selectedType && readings.length > 0" class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h2 class="text-lg font-semibold text-gray-800">Istoric {{ getSelectedTypeInfo()?.nameRo }}</h2>
+          <span class="text-sm text-gray-500">{{ totalElements }} înregistrări</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valoare</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Note</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alerte</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acțiuni</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr *ngFor="let reading of readings" class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  {{ formatDate(reading.measuredAt) }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="text-lg font-semibold text-gray-900">{{ reading.displayValue }}</span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">
+                  {{ reading.notes || '—' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span *ngIf="reading.alerts.length === 0" class="text-green-500">✓</span>
+                  <span *ngFor="let alert of reading.alerts" class="inline-block mr-1">
+                    {{ getSeverityIcon(alert.severity) }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                  <button (click)="deleteReading(reading)"
+                          class="text-red-500 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPages > 1" class="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+          <button (click)="prevPage()"
+                  [disabled]="currentPage === 0"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            ← Anterior
+          </button>
+          <span class="text-sm text-gray-500">
+            Pagina {{ currentPage + 1 }} din {{ totalPages }}
+          </span>
+          <button (click)="nextPage()"
+                  [disabled]="currentPage >= totalPages - 1"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Următor →
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State for Selected Type -->
+      <div *ngIf="selectedType && readings.length === 0" class="bg-white rounded-xl shadow-sm p-12 text-center">
+        <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Nicio înregistrare</h3>
+        <p class="text-gray-500 mb-4">Nu există măsurători pentru {{ getSelectedTypeInfo()?.nameRo }}</p>
+        <button (click)="openAddModal(selectedType!)"
+                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+          Adaugă prima măsurătoare
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty Dashboard State -->
+    <div *ngIf="!isLoading && (!dashboard || statsArray.length === 0)" class="bg-white rounded-xl shadow-sm p-12 text-center">
+      <div class="max-w-md mx-auto">
+        <svg class="w-24 h-24 mx-auto mb-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+        </svg>
+        <h2 class="text-2xl font-bold text-gray-900 mb-3">Începe să-ți monitorizezi sănătatea</h2>
+        <p class="text-gray-500 mb-6">
+          Adaugă prima ta măsurătoare pentru a începe să urmărești evoluția indicatorilor de sănătate.
+        </p>
+        <button (click)="openAddModal()"
+                class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Adaugă prima măsurătoare
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Reading Modal -->
+<div *ngIf="showAddModal" class="fixed inset-0 z-50 overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen px-4">
+    <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" (click)="closeAddModal()"></div>
+
+    <div class="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6 z-[60]">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-xl font-semibold text-gray-900">Adaugă măsurătoare</h3>
+        <button (click)="closeAddModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <form [formGroup]="readingForm" (ngSubmit)="saveReading()">
+        <!-- Reading Type -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Tip măsurătoare *</label>
+          <select formControlName="readingType"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Selectează...</option>
+            <option *ngFor="let type of readingTypes" [value]="type">
+              {{ getTypeInfo(type).nameRo }} ({{ getTypeInfo(type).unit }})
+            </option>
+          </select>
+        </div>
+
+        <!-- Value -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {{ needsSecondaryValue() ? 'Valoare Sistolică *' : 'Valoare *' }}
+          </label>
+          <input type="number" step="0.1" formControlName="value"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                 placeholder="Ex: 120">
+        </div>
+
+        <!-- Secondary Value (for blood pressure) -->
+        <div *ngIf="needsSecondaryValue()" class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Valoare Diastolică *</label>
+          <input type="number" step="0.1" formControlName="secondaryValue"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                 placeholder="Ex: 80">
+        </div>
+
+        <!-- Date/Time -->
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Data și ora</label>
+          <input type="datetime-local" formControlName="measuredAt"
+                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+
+        <!-- Notes -->
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Note (opțional)</label>
+          <textarea formControlName="notes" rows="2"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Ex: După masă, înainte de culcare..."></textarea>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex space-x-3">
+          <button type="button" (click)="closeAddModal()"
+                  class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+            Anulează
+          </button>
+          <button type="submit" [disabled]="readingForm.invalid"
+                  class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            Salvează
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
