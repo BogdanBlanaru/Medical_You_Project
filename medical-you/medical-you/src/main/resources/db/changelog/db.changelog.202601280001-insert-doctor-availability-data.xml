@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="202601280001-1" author="system">
+        <comment>Insert default availability for all existing doctors (Mon-Fri 9:00-17:00)</comment>
+
+        <!-- Insert availability for each day (Monday=1 to Friday=5) for all doctors -->
+        <sql>
+            INSERT INTO doctor_availability (doctor_id, day_of_week, start_time, end_time, slot_duration_minutes, is_active, created_at, updated_at)
+            SELECT
+                d.id,
+                day_num,
+                '09:00:00'::TIME,
+                '17:00:00'::TIME,
+                30,
+                true,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            FROM doctors d
+            CROSS JOIN generate_series(1, 5) AS day_num
+            WHERE NOT EXISTS (
+                SELECT 1 FROM doctor_availability da
+                WHERE da.doctor_id = d.id AND da.day_of_week = day_num
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

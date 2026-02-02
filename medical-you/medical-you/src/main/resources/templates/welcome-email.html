@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Medical You</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7fa;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse;">
+        <tr>
+            <td align="center" style="padding: 40px 0;">
+                <table role="presentation" style="width: 600px; border-collapse: collapse; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                    <!-- Header with Celebration -->
+                    <tr>
+                        <td style="padding: 40px 40px 20px 40px; text-align: center; background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); border-radius: 12px 12px 0 0;">
+                            <div style="font-size: 50px; margin-bottom: 10px;">&#127881;</div>
+                            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                                Welcome to Medical You!
+                            </h1>
+                            <p style="margin: 10px 0 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px;">
+                                Your Health Journey Starts Here
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                                Dear <span th:text="${name}" style="font-weight: 600; color: #0d9488;">User</span>,
+                            </p>
+
+                            <p style="margin: 0 0 20px 0; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                                Congratulations! Your email has been verified successfully. Welcome to the Medical You family - your personal healthcare companion.
+                            </p>
+
+                            <!-- Features Grid -->
+                            <div style="margin: 30px 0;">
+                                <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 18px; font-weight: 600; text-align: center;">
+                                    What You Can Do Now
+                                </h3>
+
+                                <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="width: 50%; padding: 10px; vertical-align: top;">
+                                            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; text-align: center; height: 100%;">
+                                                <div style="font-size: 30px; margin-bottom: 10px;">&#128197;</div>
+                                                <h4 style="margin: 0 0 8px 0; color: #166534; font-size: 14px; font-weight: 600;">Book Appointments</h4>
+                                                <p style="margin: 0; color: #15803d; font-size: 12px;">Schedule visits with qualified doctors</p>
+                                            </div>
+                                        </td>
+                                        <td style="width: 50%; padding: 10px; vertical-align: top;">
+                                            <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; text-align: center; height: 100%;">
+                                                <div style="font-size: 30px; margin-bottom: 10px;">&#128187;</div>
+                                                <h4 style="margin: 0 0 8px 0; color: #1e40af; font-size: 14px; font-weight: 600;">Video Consultations</h4>
+                                                <p style="margin: 0; color: #3b82f6; font-size: 12px;">Connect with doctors remotely</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 50%; padding: 10px; vertical-align: top;">
+                                            <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; text-align: center; height: 100%;">
+                                                <div style="font-size: 30px; margin-bottom: 10px;">&#129302;</div>
+                                                <h4 style="margin: 0 0 8px 0; color: #92400e; font-size: 14px; font-weight: 600;">AI Health Assistant</h4>
+                                                <p style="margin: 0; color: #b45309; font-size: 12px;">Get instant health insights</p>
+                                            </div>
+                                        </td>
+                                        <td style="width: 50%; padding: 10px; vertical-align: top;">
+                                            <div style="background-color: #fce7f3; padding: 20px; border-radius: 8px; text-align: center; height: 100%;">
+                                                <div style="font-size: 30px; margin-bottom: 10px;">&#128202;</div>
+                                                <h4 style="margin: 0 0 8px 0; color: #9d174d; font-size: 14px; font-weight: 600;">Health Tracking</h4>
+                                                <p style="margin: 0; color: #be185d; font-size: 12px;">Monitor your health progress</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- CTA Button -->
+                            <table role="presentation" style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td align="center" style="padding: 20px 0;">
+                                        <a th:href="${loginLink}"
+                                           style="display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%); color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 14px rgba(13, 148, 136, 0.4);">
+                                            Start Exploring
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin: 20px 0 0 0; color: #4b5563; font-size: 16px; line-height: 1.6; text-align: center;">
+                                We're excited to have you on board!
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f9fafb; border-radius: 0 0 12px 12px; text-align: center;">
+                            <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
+                                Need help? Contact our support team anytime.
+                            </p>
+                            <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                                &copy; <span th:text="${year}">2024</span> Medical You. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

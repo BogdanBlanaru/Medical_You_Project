@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Document Folders Table -->
+    <changeSet id="202602020003-1" author="system">
+        <comment>Create document_folders table for organizing patient documents</comment>
+
+        <createTable tableName="document_folders">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="patient_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="parent_folder_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="icon" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="color" type="VARCHAR(20)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="document_folders"
+            baseColumnNames="patient_id"
+            constraintName="fk_document_folders_patient"
+            referencedTableName="patients"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+            baseTableName="document_folders"
+            baseColumnNames="parent_folder_id"
+            constraintName="fk_document_folders_parent"
+            referencedTableName="document_folders"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_document_folders_patient" tableName="document_folders">
+            <column name="patient_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Documents Table -->
+    <changeSet id="202602020003-2" author="system">
+        <comment>Create documents table for storing patient medical documents</comment>
+
+        <createTable tableName="documents">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="patient_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="family_member_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="folder_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="document_type" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_path" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_size" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mime_type" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="thumbnail_path" type="VARCHAR(500)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="tags" type="JSONB">
+                <constraints nullable="true"/>
+            </column>
+            <column name="is_shared_with_doctor" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shared_with_doctors" type="JSONB">
+                <constraints nullable="true"/>
+            </column>
+            <column name="document_date" type="DATE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="uploaded_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="documents"
+            baseColumnNames="patient_id"
+            constraintName="fk_documents_patient"
+            referencedTableName="patients"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+            baseTableName="documents"
+            baseColumnNames="family_member_id"
+            constraintName="fk_documents_family_member"
+            referencedTableName="family_members"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+            baseTableName="documents"
+            baseColumnNames="folder_id"
+            constraintName="fk_documents_folder"
+            referencedTableName="document_folders"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+
+        <createIndex indexName="idx_documents_patient" tableName="documents">
+            <column name="patient_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_documents_folder" tableName="documents">
+            <column name="folder_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_documents_type" tableName="documents">
+            <column name="document_type"/>
+        </createIndex>
+
+        <createIndex indexName="idx_documents_uploaded_at" tableName="documents">
+            <column name="uploaded_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

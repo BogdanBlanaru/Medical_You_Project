@@ -1,0 +1,34 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="db.changelog.202412080239-create-doctor-table" author="Alex">
+        <sql>
+            create table if not exists doctors (
+            id SERIAL PRIMARY KEY,
+            name VARCHAR(50),
+            email VARCHAR(50),
+            password VARCHAR(50),
+            specialization VARCHAR(255),
+            hospital VARCHAR(255),
+            hospital_address VARCHAR(255),
+            rating NUMERIC(3, 2),
+            years_of_experience INTEGER,
+            education VARCHAR(255),
+            office_hours VARCHAR(50),
+            contact_number VARCHAR(20),
+            role VARCHAR(20),
+            created_at timestamp default now(),
+            is_deleted boolean default false NOT NULL
+            );
+        </sql>
+        <rollback>
+            <sql>
+                drop table if exists doctors;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

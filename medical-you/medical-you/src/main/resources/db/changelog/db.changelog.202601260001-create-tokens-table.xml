@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="db.changelog.202601260001-create-tokens-table" author="Claude">
+        <sql>
+            CREATE TABLE IF NOT EXISTS tokens (
+                id SERIAL PRIMARY KEY,
+                token VARCHAR(512) UNIQUE NOT NULL,
+                revoked BOOLEAN NOT NULL DEFAULT FALSE,
+                expired BOOLEAN NOT NULL DEFAULT FALSE,
+                patient_id BIGINT,
+                doctor_id BIGINT,
+                CONSTRAINT fk_token_patient FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+                CONSTRAINT fk_token_doctor FOREIGN KEY (doctor_id) REFERENCES doctors(id) ON DELETE CASCADE
+            );
+
+            CREATE INDEX idx_tokens_token ON tokens(token);
+            CREATE INDEX idx_tokens_patient_id ON tokens(patient_id);
+            CREATE INDEX idx_tokens_doctor_id ON tokens(doctor_id);
+        </sql>
+    </changeSet>
+</databaseChangeLog>

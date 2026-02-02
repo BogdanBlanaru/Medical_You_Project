@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Health Readings Table - stores all health measurements -->
+    <changeSet id="202602020001-1" author="system">
+        <comment>Create health_readings table for tracking patient health metrics</comment>
+
+        <createTable tableName="health_readings">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="patient_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="family_member_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="reading_type" type="VARCHAR(30)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="DECIMAL(10,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="secondary_value" type="DECIMAL(10,2)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="unit" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="measured_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Foreign key to patients -->
+        <addForeignKeyConstraint
+            baseTableName="health_readings"
+            baseColumnNames="patient_id"
+            constraintName="fk_health_readings_patient"
+            referencedTableName="patients"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <!-- Foreign key to family_members (optional) -->
+        <addForeignKeyConstraint
+            baseTableName="health_readings"
+            baseColumnNames="family_member_id"
+            constraintName="fk_health_readings_family_member"
+            referencedTableName="family_members"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <!-- Index for faster queries by patient and type -->
+        <createIndex indexName="idx_health_readings_patient_type" tableName="health_readings">
+            <column name="patient_id"/>
+            <column name="reading_type"/>
+        </createIndex>
+
+        <!-- Index for date range queries -->
+        <createIndex indexName="idx_health_readings_measured_at" tableName="health_readings">
+            <column name="measured_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Health Alerts Table - stores alerts for abnormal values -->
+    <changeSet id="202602020001-2" author="system">
+        <comment>Create health_alerts table for tracking abnormal health readings</comment>
+
+        <createTable tableName="health_alerts">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="health_reading_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="severity" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_acknowledged" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="acknowledged_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Foreign key to health_readings -->
+        <addForeignKeyConstraint
+            baseTableName="health_alerts"
+            baseColumnNames="health_reading_id"
+            constraintName="fk_health_alerts_reading"
+            referencedTableName="health_readings"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <!-- Index for unacknowledged alerts -->
+        <createIndex indexName="idx_health_alerts_acknowledged" tableName="health_alerts">
+            <column name="is_acknowledged"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

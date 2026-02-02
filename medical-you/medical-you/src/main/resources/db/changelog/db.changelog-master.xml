@@ -1,0 +1,50 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <include file="classpath:/db/changelog/db.changelog.202412080138-create-patient-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202412080147-create-chat-log-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202412080144-create-patient-data-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202412080239-create-doctor-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202412080255-create-doctor-patient-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202412080304-create-admin-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202601260001-create-tokens-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202601260002-create-appointments-table.xml"/>
+
+    <!-- Auth System Premium - Email Verification & Password Reset -->
+    <include file="classpath:/db/changelog/db.changelog.202601270001-add-auth-columns-patients.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202601270002-add-auth-columns-doctors.xml"/>
+
+    <!-- Patient Profile (PHR) -->
+    <include file="classpath:/db/changelog/db.changelog.202601270003-create-patient-profiles-table.xml"/>
+
+    <!-- Booking System Premium - Doctor Availability -->
+    <include file="classpath:/db/changelog/db.changelog.202601270004-create-doctor-availability-table.xml"/>
+
+    <!-- Insert default availability for all doctors -->
+    <include file="classpath:/db/changelog/db.changelog.202601280001-insert-doctor-availability-data.xml"/>
+
+    <!-- Video Call Chat Messages -->
+    <include file="classpath:/db/changelog/db.changelog.202601280002-create-video-call-messages-table.xml"/>
+
+    <!-- Add symptoms column to chat_logs -->
+    <include file="classpath:/db/changelog/db.changelog.202601280003-add-symptoms-to-chat-logs.xml"/>
+
+    <!-- Family Management - FAZA 2 -->
+    <include file="classpath:/db/changelog/db.changelog.202601280004-create-family-management-tables.xml"/>
+
+    <!-- Fix column sizes in dependent_profiles -->
+    <include file="classpath:/db/changelog/db.changelog.202601290001-fix-dependent-profiles-column-sizes.xml"/>
+
+    <!-- Health Trackers - FAZA 2 -->
+    <include file="classpath:/db/changelog/db.changelog.202602020001-create-health-readings-table.xml"/>
+
+    <!-- Medication Management - FAZA 3 -->
+    <include file="classpath:/db/changelog/db.changelog.202602020002-create-medications-table.xml"/>
+
+    <!-- Document Management - FAZA 4 -->
+    <include file="classpath:/db/changelog/db.changelog.202602020003-create-documents-table.xml"/>
+
+</databaseChangeLog>

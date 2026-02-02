@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="202601270004-1" author="system">
+        <comment>Create doctor_availability table for scheduling time slots</comment>
+
+        <createTable tableName="doctor_availability">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="doctor_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Day of week: 1=Monday, 2=Tuesday, ..., 7=Sunday -->
+            <column name="day_of_week" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Time slots -->
+            <column name="start_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Slot duration in minutes (default 30) -->
+            <column name="slot_duration_minutes" type="INTEGER" defaultValue="30">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Is this slot active? -->
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Audit fields -->
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <!-- Foreign key to doctors table -->
+        <addForeignKeyConstraint
+            baseTableName="doctor_availability"
+            baseColumnNames="doctor_id"
+            constraintName="fk_availability_doctor"
+            referencedTableName="doctors"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <!-- Index for faster lookups -->
+        <createIndex indexName="idx_availability_doctor_day" tableName="doctor_availability">
+            <column name="doctor_id"/>
+            <column name="day_of_week"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="202601270004-2" author="system">
+        <comment>Create doctor_time_off table for blocked dates/vacations</comment>
+
+        <createTable tableName="doctor_time_off">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="doctor_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="reason" type="VARCHAR(255)"/>
+
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="doctor_time_off"
+            baseColumnNames="doctor_id"
+            constraintName="fk_timeoff_doctor"
+            referencedTableName="doctors"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_timeoff_doctor_dates" tableName="doctor_time_off">
+            <column name="doctor_id"/>
+            <column name="start_date"/>
+            <column name="end_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

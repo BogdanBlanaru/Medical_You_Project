@@ -1,0 +1,25 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="db.changelog.202412080304-create-admin-table" author="Alex">
+        <sql>
+            create table if not exists admins (
+            id SERIAL PRIMARY KEY,
+            email VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(50) NOT NULL,
+            role VARCHAR(20) NOT NULL,
+            created_at timestamp default now(),
+            is_deleted boolean default false NOT NULL
+            );
+        </sql>
+        <rollback>
+            <sql>
+                drop table if exists admins;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

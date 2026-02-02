@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="202601270001-add-auth-columns-patients" author="medical-you">
+        <comment>Add email verification and password reset columns to patients table</comment>
+
+        <!-- Email verification columns -->
+        <addColumn tableName="patients">
+            <column name="email_verified" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="patients">
+            <column name="verification_token" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="patients">
+            <column name="verification_token_expiry" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Password reset columns -->
+        <addColumn tableName="patients">
+            <column name="reset_token" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addColumn tableName="patients">
+            <column name="reset_token_expiry" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <!-- Create indexes for token lookups -->
+        <createIndex tableName="patients" indexName="idx_patients_verification_token">
+            <column name="verification_token"/>
+        </createIndex>
+
+        <createIndex tableName="patients" indexName="idx_patients_reset_token">
+            <column name="reset_token"/>
+        </createIndex>
+
+        <rollback>
+            <dropIndex tableName="patients" indexName="idx_patients_reset_token"/>
+            <dropIndex tableName="patients" indexName="idx_patients_verification_token"/>
+            <dropColumn tableName="patients" columnName="reset_token_expiry"/>
+            <dropColumn tableName="patients" columnName="reset_token"/>
+            <dropColumn tableName="patients" columnName="verification_token_expiry"/>
+            <dropColumn tableName="patients" columnName="verification_token"/>
+            <dropColumn tableName="patients" columnName="email_verified"/>
+        </rollback>
+    </changeSet>
+
+    <!-- Set existing patients as verified (for backwards compatibility) -->
+    <changeSet id="202601270001-verify-existing-patients" author="medical-you">
+        <comment>Mark existing patients as email verified</comment>
+        <update tableName="patients">
+            <column name="email_verified" valueBoolean="true"/>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

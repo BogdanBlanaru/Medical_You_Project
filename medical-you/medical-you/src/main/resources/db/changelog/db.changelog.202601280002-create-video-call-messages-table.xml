@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="202601280002-1" author="system">
+        <comment>Create video_call_messages table for storing video call chat history</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS video_call_messages (
+                id SERIAL PRIMARY KEY,
+                room_id VARCHAR(255) NOT NULL,
+                sender_name VARCHAR(255) NOT NULL,
+                sender_id BIGINT,
+                sender_type VARCHAR(50),
+                message TEXT NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                is_deleted BOOLEAN DEFAULT FALSE
+            );
+
+            -- Create indexes for faster queries
+            CREATE INDEX IF NOT EXISTS idx_vcm_room_id ON video_call_messages(room_id);
+            CREATE INDEX IF NOT EXISTS idx_vcm_created_at ON video_call_messages(created_at);
+            CREATE INDEX IF NOT EXISTS idx_vcm_sender_id ON video_call_messages(sender_id);
+        </sql>
+        <rollback>
+            <sql>
+                DROP INDEX IF EXISTS idx_vcm_sender_id;
+                DROP INDEX IF EXISTS idx_vcm_created_at;
+                DROP INDEX IF EXISTS idx_vcm_room_id;
+                DROP TABLE IF EXISTS video_call_messages;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Family Groups Table -->
+    <changeSet id="202601280004-1" author="system">
+        <comment>Create family_groups table</comment>
+
+        <createTable tableName="family_groups">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="family_groups"
+            baseColumnNames="created_by"
+            constraintName="fk_family_group_patient"
+            referencedTableName="patients"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_family_group_created_by" tableName="family_groups">
+            <column name="created_by"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Family Members Table -->
+    <changeSet id="202601280004-2" author="system">
+        <comment>Create family_members table</comment>
+
+        <createTable tableName="family_members">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="family_group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="relationship_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="date_of_birth" type="DATE"/>
+
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="family_members"
+            baseColumnNames="family_group_id"
+            constraintName="fk_family_member_group"
+            referencedTableName="family_groups"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_family_member_group" tableName="family_members">
+            <column name="family_group_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_family_member_relationship" tableName="family_members">
+            <column name="relationship_type"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Dependent Profiles Table (medical info for family members) -->
+    <changeSet id="202601280004-3" author="system">
+        <comment>Create dependent_profiles table for family member medical info</comment>
+
+        <createTable tableName="dependent_profiles">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="family_member_id" type="BIGINT">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <!-- Personal Information -->
+            <column name="phone_number" type="VARCHAR(20)"/>
+            <column name="gender" type="VARCHAR(20)"/>
+            <column name="address" type="VARCHAR(500)"/>
+            <column name="city" type="VARCHAR(100)"/>
+            <column name="country" type="VARCHAR(100)"/>
+            <column name="avatar_url" type="VARCHAR(500)"/>
+
+            <!-- Medical Information -->
+            <column name="blood_type" type="VARCHAR(10)"/>
+            <column name="height_cm" type="DECIMAL(5,2)"/>
+            <column name="weight_kg" type="DECIMAL(5,2)"/>
+
+            <!-- JSON Arrays for medical data -->
+            <column name="allergies" type="TEXT"/>
+            <column name="chronic_conditions" type="TEXT"/>
+            <column name="current_medications" type="TEXT"/>
+
+            <!-- Emergency Contact -->
+            <column name="emergency_contact_name" type="VARCHAR(255)"/>
+            <column name="emergency_contact_phone" type="VARCHAR(20)"/>
+            <column name="emergency_contact_relationship" type="VARCHAR(50)"/>
+
+            <!-- Medical ID -->
+            <column name="medical_id" type="VARCHAR(20)">
+                <constraints unique="true"/>
+            </column>
+
+            <!-- Audit fields -->
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP"/>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="dependent_profiles"
+            baseColumnNames="family_member_id"
+            constraintName="fk_dependent_profile_member"
+            referencedTableName="family_members"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_dependent_profile_member" tableName="dependent_profiles">
+            <column name="family_member_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_dependent_profile_medical_id" tableName="dependent_profiles">
+            <column name="medical_id"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Add family_member_id to appointments table -->
+    <changeSet id="202601280004-4" author="system">
+        <comment>Add family_member_id to appointments for booking on behalf of family</comment>
+
+        <addColumn tableName="appointments">
+            <column name="family_member_id" type="BIGINT"/>
+        </addColumn>
+
+        <addForeignKeyConstraint
+            baseTableName="appointments"
+            baseColumnNames="family_member_id"
+            constraintName="fk_appointment_family_member"
+            referencedTableName="family_members"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+    <!-- Add family_member_id to chat_logs table -->
+    <changeSet id="202601280004-5" author="system">
+        <comment>Add family_member_id to chat_logs for AI consultations per family member</comment>
+
+        <addColumn tableName="chat_logs">
+            <column name="family_member_id" type="BIGINT"/>
+        </addColumn>
+
+        <addForeignKeyConstraint
+            baseTableName="chat_logs"
+            baseColumnNames="family_member_id"
+            constraintName="fk_chat_log_family_member"
+            referencedTableName="family_members"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+</databaseChangeLog>

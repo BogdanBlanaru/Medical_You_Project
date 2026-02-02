@@ -1,0 +1,27 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="db.changelog.202412080147-create-chat-logs-table" author="Alex">
+        <sql>
+            create table if not exists chat_logs (
+            id SERIAL PRIMARY KEY,
+            prognosis VARCHAR(255),
+            description VARCHAR(255),
+            precautions TEXT[],
+            complications TEXT[],
+            severity INTEGER,
+            created_at timestamp default now(),
+            is_deleted boolean default false NOT NULL
+            );
+        </sql>
+        <rollback>
+            <sql>
+                drop table if exists chat_logs;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

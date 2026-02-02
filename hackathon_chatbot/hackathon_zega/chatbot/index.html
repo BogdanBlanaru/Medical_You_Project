@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Chatbot</title>
+</head>
+<body>
+    <h1>Medical Chatbot</h1>
+    <div id="chatbox">
+        <p id="response">Hi, I am your medical assistant. Can I help you with a diagnostic?</p>
+    </div>
+    <input type="text" id="user-input" placeholder="Type here..." />
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        let userId = "user123"; // Simulate user session
+
+        async function sendMessage() {
+            const inputBox = document.getElementById("user-input");
+            const message = inputBox.value.trim();
+            const chatbox = document.getElementById("chatbox");
+
+            if (!message) return;
+
+            // Display user message
+            chatbox.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+
+            let endpoint = "/response";
+            if (message.toLowerCase() === "start") endpoint = "/start";
+            if (message.toLowerCase().includes(",")) endpoint = "/predict";
+
+            // Fetch response from backend
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: userId, message: message }),
+            });
+            const data = await response.json();
+
+            // Display bot response
+            chatbox.innerHTML += `<p><strong>Bot:</strong> ${data.message || JSON.stringify(data)}</p>`;
+            if (data.symptoms) {
+                chatbox.innerHTML += `<p><strong>Symptoms:</strong> ${data.symptoms.join(", ")}</p>`;
+            }
+            inputBox.value = "";
+        }
+    </script>
+</body>
+</html>

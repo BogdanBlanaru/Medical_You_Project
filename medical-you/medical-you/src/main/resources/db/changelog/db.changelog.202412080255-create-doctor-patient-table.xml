@@ -1,0 +1,24 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+    <changeSet id="db.changelog.202412080255-create-doctor-patient-table" author="Alex">
+        <sql>
+            create table if not exists doctor_patient (
+            patient_id BIGINT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
+            doctor_id BIGINT NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+            PRIMARY KEY (patient_id, doctor_id),
+            created_at timestamp default now(),
+            is_deleted boolean default false NOT NULL
+            );
+        </sql>
+        <rollback>
+            <sql>
+                drop table if exists doctor_patient;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

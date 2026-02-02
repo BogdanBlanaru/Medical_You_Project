@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Medications Table -->
+    <changeSet id="202602020002-1" author="system">
+        <comment>Create medications table for tracking patient medications</comment>
+
+        <createTable tableName="medications">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="patient_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="family_member_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dosage" type="VARCHAR(100)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="frequency" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="times_per_day" type="INTEGER" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="specific_times" type="JSONB">
+                <constraints nullable="true"/>
+            </column>
+            <column name="instructions" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="prescribed_by" type="VARCHAR(255)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="start_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="end_date" type="DATE">
+                <constraints nullable="true"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="refill_reminder_days" type="INTEGER" defaultValueNumeric="7">
+                <constraints nullable="true"/>
+            </column>
+            <column name="pills_remaining" type="INTEGER">
+                <constraints nullable="true"/>
+            </column>
+            <column name="pills_per_dose" type="INTEGER" defaultValueNumeric="1">
+                <constraints nullable="true"/>
+            </column>
+            <column name="color" type="VARCHAR(20)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="notes" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="medications"
+            baseColumnNames="patient_id"
+            constraintName="fk_medications_patient"
+            referencedTableName="patients"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+            baseTableName="medications"
+            baseColumnNames="family_member_id"
+            constraintName="fk_medications_family_member"
+            referencedTableName="family_members"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_medications_patient" tableName="medications">
+            <column name="patient_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_medications_status" tableName="medications">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Medication Logs Table -->
+    <changeSet id="202602020002-2" author="system">
+        <comment>Create medication_logs table for tracking medication intake</comment>
+
+        <createTable tableName="medication_logs">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="medication_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="scheduled_time" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="taken_at" type="TIMESTAMP">
+                <constraints nullable="true"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="medication_logs"
+            baseColumnNames="medication_id"
+            constraintName="fk_medication_logs_medication"
+            referencedTableName="medications"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_medication_logs_medication" tableName="medication_logs">
+            <column name="medication_id"/>
+        </createIndex>
+
+        <createIndex indexName="idx_medication_logs_taken_at" tableName="medication_logs">
+            <column name="taken_at"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- Medication Reminders Table -->
+    <changeSet id="202602020002-3" author="system">
+        <comment>Create medication_reminders table for scheduling medication reminders</comment>
+
+        <createTable tableName="medication_reminders">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="medication_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reminder_time" type="TIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(50)">
+                <constraints nullable="true"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="medication_reminders"
+            baseColumnNames="medication_id"
+            constraintName="fk_medication_reminders_medication"
+            referencedTableName="medications"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+
+        <createIndex indexName="idx_medication_reminders_medication" tableName="medication_reminders">
+            <column name="medication_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
