@@ -47,4 +47,11 @@
     <!-- Document Management - FAZA 4 -->
     <include file="classpath:/db/changelog/db.changelog.202602020003-create-documents-table.xml"/>
 
+    <!-- Ask a Doctor Chat - FAZA 5 -->
+    <include file="classpath:/db/changelog/db.changelog.202602030001-create-conversations-table.xml"/>
+    <include file="classpath:/db/changelog/db.changelog.202602030002-create-chat-messages-table.xml"/>
+
+    <!-- Fix password column sizes for doctors and admins -->
+    <include file="classpath:/db/changelog/db.changelog.202602030003-fix-password-column-sizes.xml"/>
+
 </databaseChangeLog>

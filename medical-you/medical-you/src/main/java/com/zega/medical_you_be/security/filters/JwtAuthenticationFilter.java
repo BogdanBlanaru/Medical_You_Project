@@ -46,6 +46,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            userDetailsService.setRole(null); // Reset role so both tables are searched
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
             LOGGER.info("USERNAME:" + userDetails.getUsername());
 

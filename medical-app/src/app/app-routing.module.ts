@@ -25,6 +25,7 @@ import { FamilyComponent } from './family/family.component';
 import { HealthTrackerComponent } from './health-tracker/health-tracker.component';
 import { MedicationsComponent } from './medications/medications.component';
 import { DocumentsComponent } from './documents/documents.component';
+import { AskDoctorComponent } from './ask-doctor/ask-doctor.component';
 
 const routes: Routes = [
   {
@@ -111,6 +112,16 @@ const routes: Routes = [
     path: 'documents',
     component: DocumentsComponent,
     canActivate: [PacientGuard],
+  },
+  {
+    path: 'ask-doctor',
+    component: AskDoctorComponent,
+    canActivate: [PacientGuard],
+  },
+  {
+    path: 'doctor-messages',
+    component: AskDoctorComponent,
+    canActivate: [DoctorGuard],
   },
   {
     path: 'doctor-patients',

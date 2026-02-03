@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 0;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px 40px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">Medical You</h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 14px;">New Message Received</p>
+                        </td>
+                    </tr>
+                    <!-- Body -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <p style="font-size: 16px; color: #333; margin: 0 0 20px;">
+                                Hello <strong th:text="${recipientName}">User</strong>,
+                            </p>
+                            <p style="font-size: 15px; color: #555; line-height: 1.6; margin: 0 0 20px;">
+                                You have a new message from <strong th:text="${senderName}">Doctor</strong>
+                                regarding: <strong th:text="${subject}">Subject</strong>
+                            </p>
+                            <!-- Message Preview -->
+                            <div style="background-color: #f8f9fa; border-left: 4px solid #667eea; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 0 0 30px;">
+                                <p style="font-size: 14px; color: #666; margin: 0; line-height: 1.6; font-style: italic;" th:text="${messagePreview}">
+                                    Message preview here...
+                                </p>
+                            </div>
+                            <!-- CTA Button -->
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a th:href="${chatLink}" style="display: inline-block; padding: 14px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 16px; font-weight: 600;">
+                                    View Conversation
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8f9fa; padding: 20px 40px; text-align: center; border-top: 1px solid #eee;">
+                            <p style="font-size: 12px; color: #999; margin: 0;">
+                                &copy; <span th:text="${year}">2026</span> Medical You. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

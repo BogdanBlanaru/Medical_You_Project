@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="202602030001-1" author="system">
+        <comment>Create conversations table for doctor-patient messaging</comment>
+        <sql>
+            CREATE TABLE IF NOT EXISTS conversations (
+                id SERIAL PRIMARY KEY,
+                patient_id BIGINT NOT NULL REFERENCES patients(id),
+                doctor_id BIGINT NOT NULL REFERENCES doctors(id),
+                family_member_id BIGINT REFERENCES family_members(id),
+                subject VARCHAR(200) NOT NULL,
+                status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+                last_message_at TIMESTAMP,
+                last_message_preview VARCHAR(255),
+                unread_count_patient INTEGER DEFAULT 0,
+                unread_count_doctor INTEGER DEFAULT 0,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_conv_patient_id ON conversations(patient_id);
+            CREATE INDEX IF NOT EXISTS idx_conv_doctor_id ON conversations(doctor_id);
+            CREATE INDEX IF NOT EXISTS idx_conv_family_member_id ON conversations(family_member_id);
+            CREATE INDEX IF NOT EXISTS idx_conv_status ON conversations(status);
+            CREATE INDEX IF NOT EXISTS idx_conv_last_message_at ON conversations(last_message_at);
+        </sql>
+        <rollback>
+            <sql>
+                DROP INDEX IF EXISTS idx_conv_last_message_at;
+                DROP INDEX IF EXISTS idx_conv_status;
+                DROP INDEX IF EXISTS idx_conv_family_member_id;
+                DROP INDEX IF EXISTS idx_conv_doctor_id;
+                DROP INDEX IF EXISTS idx_conv_patient_id;
+                DROP TABLE IF EXISTS conversations;
+            </sql>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

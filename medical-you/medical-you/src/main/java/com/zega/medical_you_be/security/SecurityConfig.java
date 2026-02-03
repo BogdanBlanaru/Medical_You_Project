@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request ->
-                        request.requestMatchers("/api/auth/**").permitAll()
+                        request.requestMatchers("/api/auth/**", "/error").permitAll()
                                 .requestMatchers("/api/patient/profile/avatar/**").permitAll() // Public avatar access
                                 .requestMatchers("/api/patient/profile/medical-id/**").permitAll() // Emergency access
                                 .requestMatchers("/api/patient/profile/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
@@ -46,6 +46,7 @@ public class SecurityConfig {
                                 .requestMatchers("/api/health/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
                                 .requestMatchers("/api/medications/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
                                 .requestMatchers("/api/documents/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
+                                .requestMatchers("/api/conversations/**").hasAnyRole("ADMIN", "DOCTOR", "PATIENT")
                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                 .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())

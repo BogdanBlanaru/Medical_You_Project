@@ -103,4 +103,18 @@ public interface EmailService {
      */
     void sendDoctorNewAppointmentEmail(String to, String doctorName, String patientName,
                                        java.time.LocalDateTime appointmentDateTime, String reason);
+
+    // ==================== CHAT MESSAGE EMAILS ====================
+
+    /**
+     * Send notification email when a new chat message is received.
+     *
+     * @param to recipient email address
+     * @param recipientName recipient name
+     * @param senderName message sender name
+     * @param subject conversation subject
+     * @param messagePreview preview of the message content
+     */
+    void sendNewChatMessageEmail(String to, String recipientName, String senderName,
+                                  String subject, String messagePreview);
 }

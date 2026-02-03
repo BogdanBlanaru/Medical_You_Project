@@ -4,6 +4,7 @@ import com.zega.medical_you_be.model.dto.AppointmentDto;
 import com.zega.medical_you_be.model.dto.DoctorAvailabilityDto;
 import com.zega.medical_you_be.model.dto.TimeSlotDto;
 import com.zega.medical_you_be.model.entity.*;
+import com.zega.medical_you_be.model.entity.composite.DoctorPatientId;
 import com.zega.medical_you_be.model.enums.AppointmentStatus;
 import com.zega.medical_you_be.repo.*;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class BookingServiceImpl implements BookingService {
     private final AppointmentRepository appointmentRepo;
     private final DoctorRepo doctorRepo;
     private final PatientRepo patientRepo;
+    private final DoctorPatientRepo doctorPatientRepo;
     private final EmailService emailService;
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("hh:mm a");
@@ -235,6 +237,14 @@ public class BookingServiceImpl implements BookingService {
         appointment = appointmentRepo.save(appointment);
         log.info("Appointment booked: {} for patient {} with doctor {} at {}",
                 appointment.getId(), patientId, doctorId, dateTime);
+
+        // Ensure DoctorPatient relationship exists
+        DoctorPatientId dpId = new DoctorPatientId(patient.getId(), doctor.getId());
+        if (!doctorPatientRepo.existsById(dpId)) {
+            DoctorPatient doctorPatient = new DoctorPatient(patient, doctor);
+            doctorPatientRepo.save(doctorPatient);
+            log.info("Created DoctorPatient relationship between patient {} and doctor {}", patientId, doctorId);
+        }
 
         // Send confirmation emails
         sendAppointmentConfirmationEmails(appointment);

@@ -254,6 +254,31 @@ public class EmailServiceImpl implements EmailService {
         }
     }
 
+    // ==================== CHAT MESSAGE EMAILS ====================
+
+    @Override
+    @Async
+    public void sendNewChatMessageEmail(String to, String recipientName, String senderName,
+                                         String subject, String messagePreview) {
+        try {
+            Context context = new Context();
+            context.setVariable("recipientName", recipientName);
+            context.setVariable("senderName", senderName);
+            context.setVariable("subject", subject);
+            context.setVariable("messagePreview", messagePreview != null && messagePreview.length() > 200
+                    ? messagePreview.substring(0, 200) + "..." : messagePreview);
+            context.setVariable("chatLink", frontendUrl + "/ask-doctor");
+            context.setVariable("year", java.time.Year.now().getValue());
+
+            String htmlContent = templateEngine.process("chat-message-notification", context);
+            sendHtmlEmail(to, "New Message: " + subject + " - Medical You", htmlContent);
+
+            LOGGER.info("Chat notification email sent to: {}", to);
+        } catch (Exception e) {
+            LOGGER.error("Failed to send chat notification email to: {}", to, e);
+        }
+    }
+
     /**
      * Helper method to send HTML emails.
      */

@@ -1,0 +1,403 @@
+<div class="min-h-screen bg-gray-50 py-6 px-4 sm:px-6 lg:px-8">
+
+  <!-- Alert -->
+  <div *ngIf="showAlert"
+       class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300"
+       [ngClass]="{
+         'bg-green-500': alertColor === 'green',
+         'bg-red-500': alertColor === 'red',
+         'bg-yellow-500': alertColor === 'yellow'
+       }">
+    {{ alertMsg }}
+  </div>
+
+  <!-- Family Member Banner -->
+  <div *ngIf="activeMemberName" class="max-w-7xl mx-auto mb-4">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-center gap-2">
+      <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+      </svg>
+      <span class="text-blue-700 text-sm font-medium">Viewing conversations for: <strong>{{ activeMemberName }}</strong></span>
+    </div>
+  </div>
+
+  <div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Ask a Doctor</h1>
+        <p class="text-gray-500 text-sm mt-1">Send messages to your doctors and get responses</p>
+      </div>
+      <button *ngIf="isPatient && !activeConversation"
+              (click)="openNewConversationModal()"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        New Conversation
+      </button>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style="height: 75vh;">
+      <div class="flex h-full">
+
+        <!-- Conversation List (Left Panel) -->
+        <div class="w-full md:w-96 border-r border-gray-200 flex flex-col"
+             [ngClass]="{'hidden md:flex': activeConversation}">
+
+          <!-- Filter -->
+          <div class="p-4 border-b border-gray-100">
+            <select [(ngModel)]="statusFilter" (change)="onStatusFilterChange()"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+              <option value="">All Conversations</option>
+              <option value="ACTIVE">Active</option>
+              <option value="CLOSED">Closed</option>
+              <option value="ARCHIVED">Archived</option>
+            </select>
+          </div>
+
+          <!-- Conversation Items -->
+          <div class="flex-1 overflow-y-auto">
+            <!-- Loading -->
+            <div *ngIf="isLoading" class="flex items-center justify-center h-32">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div *ngIf="!isLoading && conversations.length === 0" class="flex flex-col items-center justify-center h-64 px-6 text-center">
+              <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+              </svg>
+              <p class="text-gray-500 font-medium">No conversations yet</p>
+              <p *ngIf="isPatient" class="text-gray-400 text-sm mt-1">Start a conversation with your doctor</p>
+            </div>
+
+            <!-- Conversation List Items -->
+            <div *ngFor="let conv of conversations"
+                 (click)="selectConversation(conv)"
+                 class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition-colors"
+                 [ngClass]="{'bg-indigo-50 border-l-4 border-l-indigo-500': activeConversation?.id === conv.id}">
+              <div class="flex items-start gap-3">
+                <!-- Avatar -->
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0"
+                     [ngClass]="{'bg-indigo-500': isPatient, 'bg-emerald-500': isDoctor}">
+                  {{ getInitials(isPatient ? conv.doctorName : conv.patientName) }}
+                </div>
+                <!-- Content -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-sm font-semibold text-gray-900 truncate">
+                      {{ isPatient ? ('Dr. ' + conv.doctorName) : conv.patientName }}
+                    </h3>
+                    <span class="text-xs text-gray-400 whitespace-nowrap ml-2">{{ formatDate(conv.lastMessageAt || conv.createdAt) }}</span>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ conv.subject }}</p>
+                  <div class="flex items-center justify-between mt-1">
+                    <p class="text-xs text-gray-400 truncate" *ngIf="conv.lastMessagePreview">
+                      {{ conv.lastMessagePreview }}
+                    </p>
+                    <div class="flex items-center gap-2 ml-2 flex-shrink-0">
+                      <span *ngIf="conv.familyMemberName" class="text-xs bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded">
+                        {{ conv.familyMemberName }}
+                      </span>
+                      <span *ngIf="conv.unreadCount > 0"
+                            class="bg-indigo-600 text-white text-xs font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1.5">
+                        {{ conv.unreadCount }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div *ngIf="totalPages > 1" class="p-3 border-t border-gray-100 flex items-center justify-center gap-2">
+            <button (click)="goToPage(currentPage - 1)" [disabled]="currentPage === 0"
+                    class="px-3 py-1 text-sm rounded border border-gray-300 disabled:opacity-50 hover:bg-gray-50">
+              Prev
+            </button>
+            <span class="text-sm text-gray-500">{{ currentPage + 1 }} / {{ totalPages }}</span>
+            <button (click)="goToPage(currentPage + 1)" [disabled]="currentPage >= totalPages - 1"
+                    class="px-3 py-1 text-sm rounded border border-gray-300 disabled:opacity-50 hover:bg-gray-50">
+              Next
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat Window (Right Panel) -->
+        <div class="flex-1 flex flex-col" [ngClass]="{'hidden md:flex': !activeConversation}">
+
+          <!-- No Conversation Selected -->
+          <div *ngIf="!activeConversation" class="flex-1 flex flex-col items-center justify-center text-gray-400">
+            <svg class="w-20 h-20 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            <p class="text-lg font-medium">Select a conversation</p>
+            <p class="text-sm mt-1">Choose a conversation from the list to start messaging</p>
+          </div>
+
+          <!-- Active Conversation -->
+          <ng-container *ngIf="activeConversation">
+
+            <!-- Chat Header -->
+            <div class="px-4 py-3 border-b border-gray-200 bg-white flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <button (click)="backToList()" class="md:hidden p-1 hover:bg-gray-100 rounded">
+                  <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                  </svg>
+                </button>
+                <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                     [ngClass]="{'bg-indigo-500': isPatient, 'bg-emerald-500': isDoctor}">
+                  {{ getInitials(isPatient ? activeConversation.doctorName : activeConversation.patientName) }}
+                </div>
+                <div>
+                  <h3 class="font-semibold text-gray-900">
+                    {{ isPatient ? ('Dr. ' + activeConversation.doctorName) : activeConversation.patientName }}
+                  </h3>
+                  <p class="text-xs text-gray-500">
+                    {{ activeConversation.subject }}
+                    <span *ngIf="isPatient && activeConversation.doctorSpecialization" class="text-gray-400">
+                      &middot; {{ activeConversation.doctorSpecialization }}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-2 py-1 rounded-full font-medium"
+                      [ngClass]="{
+                        'bg-green-100 text-green-700': activeConversation.status === 'ACTIVE',
+                        'bg-gray-100 text-gray-600': activeConversation.status === 'CLOSED',
+                        'bg-yellow-100 text-yellow-700': activeConversation.status === 'ARCHIVED'
+                      }">
+                  {{ activeConversation.status }}
+                </span>
+                <!-- Status Actions -->
+                <div class="relative" *ngIf="activeConversation.status === 'ACTIVE'">
+                  <button *ngIf="isDoctor" (click)="updateStatus('CLOSED')"
+                          class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors">
+                    Close
+                  </button>
+                  <button *ngIf="isPatient" (click)="updateStatus('ARCHIVED')"
+                          class="text-xs px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors">
+                    Archive
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Messages -->
+            <div #messageContainer class="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50">
+              <!-- Loading Messages -->
+              <div *ngIf="isLoadingMessages" class="flex items-center justify-center h-32">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              </div>
+
+              <!-- Empty Messages -->
+              <div *ngIf="!isLoadingMessages && messages.length === 0" class="flex items-center justify-center h-32">
+                <p class="text-gray-400 text-sm">No messages yet. Start the conversation!</p>
+              </div>
+
+              <!-- Message Bubbles -->
+              <ng-container *ngFor="let message of messages; let i = index">
+                <!-- Date separator -->
+                <div *ngIf="i === 0 || formatFullDate(message.createdAt) !== formatFullDate(messages[i-1].createdAt)"
+                     class="flex items-center justify-center my-4">
+                  <div class="bg-gray-200 text-gray-500 text-xs px-3 py-1 rounded-full">
+                    {{ formatFullDate(message.createdAt) }}
+                  </div>
+                </div>
+
+                <!-- Message -->
+                <div class="flex" [ngClass]="{'justify-end': isOwnMessage(message), 'justify-start': !isOwnMessage(message)}">
+                  <div class="flex items-end gap-2 max-w-[75%]" [ngClass]="{'flex-row-reverse': isOwnMessage(message)}">
+                    <!-- Avatar (other person only) -->
+                    <div *ngIf="!isOwnMessage(message)"
+                         class="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                         [ngClass]="{'bg-indigo-500': message.senderType === 'DOCTOR', 'bg-emerald-500': message.senderType === 'PATIENT'}">
+                      {{ getInitials(message.senderName) }}
+                    </div>
+
+                    <!-- Bubble -->
+                    <div class="rounded-2xl px-4 py-2.5 shadow-sm"
+                         [ngClass]="{
+                           'bg-indigo-600 text-white rounded-br-md': isOwnMessage(message),
+                           'bg-white text-gray-800 rounded-bl-md border border-gray-200': !isOwnMessage(message)
+                         }">
+
+                      <!-- Sender name (for received messages) -->
+                      <p *ngIf="!isOwnMessage(message)" class="text-xs font-semibold mb-1"
+                         [ngClass]="{'text-indigo-600': message.senderType === 'DOCTOR', 'text-emerald-600': message.senderType === 'PATIENT'}">
+                        {{ message.senderName }}
+                      </p>
+
+                      <!-- Image attachment -->
+                      <div *ngIf="isImageAttachment(message) && message.attachmentUrl" class="mb-2">
+                        <img [src]="getAttachmentUrl(message.attachmentUrl)"
+                             [alt]="message.attachmentName || 'Image'"
+                             class="rounded-lg max-w-full max-h-64 object-cover cursor-pointer"
+                             style="cursor: pointer;">
+                      </div>
+
+                      <!-- File attachment -->
+                      <div *ngIf="message.messageType === 'FILE' && message.attachmentUrl" class="mb-2">
+                        <a [href]="getAttachmentUrl(message.attachmentUrl)" target="_blank"
+                           class="flex items-center gap-2 px-3 py-2 rounded-lg transition-colors"
+                           [ngClass]="{
+                             'bg-indigo-700 hover:bg-indigo-800': isOwnMessage(message),
+                             'bg-gray-100 hover:bg-gray-200': !isOwnMessage(message)
+                           }">
+                          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                          </svg>
+                          <div>
+                            <p class="text-sm font-medium truncate">{{ message.attachmentName }}</p>
+                            <p class="text-xs opacity-75">{{ formatFileSize(message.attachmentSize) }}</p>
+                          </div>
+                        </a>
+                      </div>
+
+                      <!-- Text content -->
+                      <p class="text-sm whitespace-pre-wrap break-words" *ngIf="message.content && message.messageType === 'TEXT'">{{ message.content }}</p>
+                      <p class="text-sm whitespace-pre-wrap break-words" *ngIf="message.content && message.messageType !== 'TEXT' && message.content !== message.attachmentName">{{ message.content }}</p>
+
+                      <!-- Time -->
+                      <p class="text-xs mt-1 text-right"
+                         [ngClass]="{'text-indigo-200': isOwnMessage(message), 'text-gray-400': !isOwnMessage(message)}">
+                        {{ formatMessageTime(message.createdAt) }}
+                        <span *ngIf="isOwnMessage(message) && message.isRead" class="ml-1">&#10003;&#10003;</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+
+            <!-- Input Area -->
+            <div class="px-4 py-3 border-t border-gray-200 bg-white" *ngIf="activeConversation.status === 'ACTIVE'">
+              <!-- Selected File Preview -->
+              <div *ngIf="selectedFile" class="mb-2 flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2">
+                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                </svg>
+                <span class="text-sm text-gray-600 truncate flex-1">{{ selectedFile.name }}</span>
+                <span class="text-xs text-gray-400">{{ formatFileSize(selectedFile.size) }}</span>
+                <button (click)="removeSelectedFile()" class="text-gray-400 hover:text-red-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                </button>
+              </div>
+
+              <div class="flex items-end gap-2">
+                <!-- File Upload Button -->
+                <button (click)="fileInput.click()"
+                        class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-gray-100 rounded-lg transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/>
+                  </svg>
+                </button>
+                <input #fileInput type="file" class="hidden" (change)="onFileSelected($event)"
+                       accept="image/*,.pdf,.doc,.docx">
+
+                <!-- Text Input -->
+                <textarea [(ngModel)]="messageInput"
+                          (keydown)="onKeyDown($event)"
+                          placeholder="Type your message..."
+                          rows="1"
+                          class="flex-1 resize-none px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 max-h-32 overflow-y-auto"
+                          style="min-height: 42px;"></textarea>
+
+                <!-- Send Button -->
+                <button (click)="sendMessage()"
+                        [disabled]="isSending || (!messageInput.trim() && !selectedFile)"
+                        class="p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                  <svg *ngIf="!isSending" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                  </svg>
+                  <div *ngIf="isSending" class="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Closed/Archived Notice -->
+            <div *ngIf="activeConversation.status !== 'ACTIVE'"
+                 class="px-4 py-3 border-t border-gray-200 bg-gray-50 text-center">
+              <p class="text-sm text-gray-500">
+                This conversation has been {{ activeConversation.status === 'CLOSED' ? 'closed by the doctor' : 'archived' }}.
+                <button *ngIf="activeConversation.status === 'ARCHIVED'" (click)="updateStatus('ACTIVE')"
+                        class="text-indigo-600 hover:text-indigo-700 font-medium ml-1">Reopen</button>
+              </p>
+            </div>
+          </ng-container>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Conversation Modal -->
+  <div *ngIf="showNewConversationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="fixed inset-0 bg-black/50" (click)="closeNewConversationModal()"></div>
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg relative z-10">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-900">New Conversation</h2>
+        <button (click)="closeNewConversationModal()" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="px-6 py-4 space-y-4">
+        <!-- Select Doctor -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Select Doctor *</label>
+          <select [(ngModel)]="selectedDoctorId"
+                  class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+            <option [ngValue]="null" disabled>Choose a doctor...</option>
+            <option *ngFor="let doctor of assignedDoctors" [ngValue]="doctor.id">
+              Dr. {{ doctor.name }} - {{ doctor.specialization }}
+              <span *ngIf="doctor.rating"> ({{ doctor.rating }} stars)</span>
+            </option>
+          </select>
+          <p *ngIf="assignedDoctors.length === 0" class="text-xs text-gray-400 mt-1">
+            No assigned doctors found. Book an appointment first.
+          </p>
+        </div>
+
+        <!-- Subject -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Subject *</label>
+          <input [(ngModel)]="newSubject" type="text" maxlength="200"
+                 placeholder="e.g., Question about medication side effects"
+                 class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Initial Message -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Your Message *</label>
+          <textarea [(ngModel)]="newInitialMessage" rows="4"
+                    placeholder="Describe your question or concern..."
+                    class="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-3">
+        <button (click)="closeNewConversationModal()"
+                class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+          Cancel
+        </button>
+        <button (click)="createConversation()"
+                [disabled]="!selectedDoctorId || !newSubject.trim() || !newInitialMessage.trim()"
+                class="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+          Start Conversation
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

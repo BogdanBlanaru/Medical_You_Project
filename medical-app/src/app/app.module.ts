@@ -34,6 +34,7 @@ import { HealthTrackerComponent } from './health-tracker/health-tracker.componen
 import { MedicationsComponent } from './medications/medications.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { DocumentsComponent } from './documents/documents.component';
+import { AskDoctorComponent } from './ask-doctor/ask-doctor.component';
 
 @NgModule({
   declarations: [
@@ -70,7 +71,8 @@ import { DocumentsComponent } from './documents/documents.component';
     NgApexchartsModule,
     HealthTrackerComponent,
     MedicationsComponent,
-    DocumentsComponent
+    DocumentsComponent,
+    AskDoctorComponent
   ],
   providers: [
     AuthService,
